@@ -2,12 +2,15 @@
 source ~/.profile
 source ~/.bashrc
 source /ptv/add_to_bash
+source /ptv/add_to_aliases
+source /ptv/add_to_path
 source /ptv/healer/bbplats/h1/.venv/bin/activate
 seplog >> /ptv/healer/bbplats/h1/logs/h1job.log
 # echo date,time,venv and current working directory
-echo "Current date and time: $(TZ=":Asia/Tehran" date)" >> /ptv/healer/bbplats/h1/logs/h1job.log
-echo "Current virtual environment: $(which python3)" >> /ptv/healer/bbplats/h1/logs/h1job.log
-echo "Current working directory: $(pwd)" >> /ptv/healer/bbplats/h1/logs/h1job.log
+echo "[+] Current date and time: $(TZ=":Asia/Tehran" date)" >> /ptv/healer/bbplats/h1/logs/h1job.log
+echo "[+] Current PATH: $PATH" >> /ptv/healer/bbplats/h1/logs/h1job.log
+echo "[+] Current virtual environment: $(which python3)" >> /ptv/healer/bbplats/h1/logs/h1job.log
+echo "[+] Current working directory: $(pwd)" >> /ptv/healer/bbplats/h1/logs/h1job.log
 # Check whether notifioo_sender is available
 a=$(which notifio_sender)
 # If a is empty, then notifio_sender is not available

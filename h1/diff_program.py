@@ -113,7 +113,7 @@ for oldlist_target in h1_tgts_old_full:
     except StopIteration:
         print(f"Target missing: {oldlist_target['attributes']['name']}\nHandle: {oldlist_target['attributes']['handle']}\n")
         # Save the format
-        os.popen(f"notifio_sender --title 'Target missing: {target_name_old}' --discord.target_base \"Target missing: {target_name_old}\nTarget Type was: {target_type_old}\nURL: {target_url_old}\" > /dev/null 2>&1")
+        os.popen(f"notifio_sender --title 'Target missing: {target_name_old}' --discord.targets_base \"Target missing: {target_name_old}\nTarget Type was: {target_type_old}\nURL: {target_url_old}\" > /dev/null 2>&1")
         print('-' * 40)
         continue
 # After all done with no error, save the new list to the old list

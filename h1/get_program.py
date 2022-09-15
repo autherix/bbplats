@@ -29,26 +29,27 @@ with open('/ptv/healer/bbplats/h1/h1_tgts_new.json', 'r') as f:
 
 # Iterate through the json file and get the handle for each program and add it to the list h1_tgts_new_handles
 h1_tgts_new_handles = []
-# tgt_counter = 0
-# for i in h1_tgts:
-#     try:
-#         this_handle = i['attributes']['handle']
-#         # print(f"Getting program {this_handle}")
-#         h1_tgts_new_handles.append(this_handle)
-#         tgt_counter += 1
-#     except:
-#         pass
-# print(f"Total targets: {tgt_counter}")
+tgt_counter = 0
+for i in h1_tgts:
+    try:
+        this_handle = i['attributes']['handle']
+        # print(f"Getting program {this_handle}")
+        h1_tgts_new_handles.append(this_handle)
+        tgt_counter += 1
+    except:
+        pass
+print(f"Total targets: {tgt_counter}")
 
 # Iterate through the list h1_tgts_new_handles and get the program details for each handle
 h1_tgts_new_full = []
 for i in h1_tgts_new_handles:
-    # Print the progress (e.g. Fetching Programs Full data : 14/615), edit the line not printing a new line if i mod 10 is 0
-    if i % 10 == 0:
+    # Print the progress (e.g. Fetching Programs Full data : 14/615), edit the line not printing a new line if i's index mod 10 is 0
+    if h1_tgts_new_handles.index(i) % 10 == 0 or h1_tgts_new_handles.index(i) == len(h1_tgts_new_handles):
         print(f"Fetching Programs Full data : {h1_tgts_new_handles.index(i)}/{len(h1_tgts_new_handles)}", end="\r")
     getting_pro = get_program(h1username, h1token, i)
     # Append the json response to the list h1_tgts_new_full
     h1_tgts_new_full.append(getting_pro.json())
+
 
 # Write the list h1_tgts_new_full to the file h1_tgts_new_full.json
 with open('/ptv/healer/bbplats/h1/h1_tgts_new_full.json', 'w') as f:
