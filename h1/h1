@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# Check whether crontab is installed
+if [ ! -x /usr/bin/crontab ]; then
+    echo "Crontab is not installed. Please install it first."
+    exit 1
+fi
+
+# Check whether crontab service is running
+if [ ! -x /etc/init.d/cron ]; then
+    # If we have sudo access, try to start the service
+    if [ -x /usr/bin/sudo ]; then
+        sudo /etc/init.d/cron start
+    else
+        echo "Crontab service is not running. Please start it first or run this script as root."
+        exit 1
+    fi
+fi
+
+# Define the script to be run
+# script='python3 /ptv/healer/bbplats/h1/get_programs.py && python3 /ptv/healer/bbplats/h1/get_program.py && python3 /ptv/healer/bbplats/h1/diff_program.py'
+
+# Clear crontab for the current user
+crontab -r
+
+# Define the cron job to run the script every 20 minutes
+# cronjob="*/1 * * * * /ptv/healer/bbplats/h1/test.sh"
+cronjob="*/20 * * * * /ptv/healer/bbplats/h1/h1job"
+
+# Add the cron job
+(crontab -l 2>/dev/null; echo "$cronjob") | crontab - && echo "Cron job added successfully."
