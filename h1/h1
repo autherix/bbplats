@@ -25,7 +25,7 @@ crontab -r
 
 # Define the cron job to run the script every 20 minutes
 # cronjob="*/1 * * * * /ptv/healer/bbplats/h1/test.sh"
-cronjob="*/15 * * * * /ptv/healer/bbplats/h1/h1job"
+cronjob="*/20 * * * * /ptv/healer/bbplats/h1/h1job"
 
 # Add the cron job
 (crontab -l 2>/dev/null; echo "$cronjob") | crontab - && echo "Cron job added successfully."

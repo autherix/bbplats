@@ -19,6 +19,7 @@ for newlist_target in h1_tgts_new_full:
     newlist_target_id = newlist_target['id']
     target_name = newlist_target['attributes']['name']
     target_handle = newlist_target['attributes']['handle']
+    target_url = f"https://hackerone.com/{target_handle}"
     target_state = newlist_target['attributes']['state']
     # If target_state equals 'public_mode' then set target_type to 'Public' else if it equals 'soft_launched' then set target_type to 'Private'
     if target_state == 'public_mode':
@@ -27,7 +28,6 @@ for newlist_target in h1_tgts_new_full:
         target_type = 'Private'
     else:
         target_type = 'Unknown'
-    target_url = f"https://hackerone.com/{target_handle}"
     try:
         # Find the dictionary in h1_tgts_old_full with the same id
         oldlist_target = next(target for target in h1_tgts_old_full if target['id'] == newlist_target_id)
@@ -41,8 +41,8 @@ for newlist_target in h1_tgts_new_full:
                     tgt_changes.append(f"Changed: {key}\n\tfrom: {oldlist_target['attributes'][key]} \tto {newlist_target['attributes'][key]}\n")
         if tgt_changes:
             tgt_changes_str = '\n'.join(tgt_changes)
-            print(f"changes for {newlist_target['attributes']['name']}:\n{'-'*15}\n{tgt_changes_str}")
-            os.popen(f"notifio_sender --discord.debug \"Changes for {newlist_target['attributes']['name']}:\n{'-'*5}\n{tgt_changes_str}\" > /dev/null 2>&1")
+            print(f"changes for {target_name}:\n{'-'*15}\n{tgt_changes_str}")
+            os.popen(f"notifio_sender --discord.debug \"Changes for {target_name}:\n{'-'*5}\n{tgt_changes_str}\" > /dev/null 2>&1")
             # seperator
             print("-" * 40)
         
@@ -59,10 +59,11 @@ for newlist_target in h1_tgts_new_full:
                     # Compare the values of the attributes in the dictionaries 
                     try: 
                         # ignore the key 'instruction' becuase it's too long
-                        if scope['attributes'][key] != oldlist_scope['attributes'][key] and key != 'instruction':
+                        # ignore the key updated_at because it's not needed
+                        if scope['attributes'][key] != oldlist_scope['attributes'][key] and key != 'instruction' and key != 'updated_at':
                             scope_changes.append(f"Changed: {key}\n\tfrom: {oldlist_scope['attributes'][key]} \tto {scope['attributes'][key]}\nScope Eligible for submission: {scope['attributes']['eligible_for_submission']}\nEligible for bounty: {scope['attributes']['eligible_for_bounty']}\n")
                     except KeyError:
-                        scope_changes.append(f"Added Scope: {key}\n\tto: {scope['attributes'][key]}\nScope Eligible for submission: {scope['attributes']['eligible_for_submission']}\nEligible for bounty: {scope['attributes']['eligible_for_bounty']}\n")
+                        scope_changes.append(f"Added Scope: {key}\nto: {scope['attributes'][key]}\nScope ID: {newlist_scope_id}\nScope Eligible for submission: {scope['attributes']['eligible_for_submission']}\nEligible for bounty: {scope['attributes']['eligible_for_bounty']}\n")
                 if scope_changes:
                     scope_changes_str = '\n'.join(scope_changes)
                     print(f"changes for target: {newlist_target['attributes']['name']}:\nURL:{target_url}\n{'-'*15}\n{scope_changes_str}")
@@ -71,8 +72,8 @@ for newlist_target in h1_tgts_new_full:
                     print("-" * 40)
             except StopIteration:
                 # If the dictionary is not found, print the following message
-                print(f"New scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
-                os.popen(f"notifio_sender --title 'New scope on {target_name}\nURL:{target_url}\nTarget Type:{target_type}' --discord.targets_scope \"New scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\" > /dev/null 2>&1")
+                print(f"New Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nScope ID: {newlist_scope_id}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
+                os.popen(f"notifio_sender --title 'New scope on {target_name}\nURL:{target_url}\nTarget Type: {target_type}' --discord.targets_scope \"New scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nScope ID: {newlist_scope_id}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\" > /dev/null 2>&1")
                 # seperator
                 print("-" * 40)
     except StopIteration:
@@ -104,11 +105,27 @@ for oldlist_target in h1_tgts_old_full:
         for scope in oldlist_target['relationships']['structured_scopes']['data']:
             oldlist_scope_id = scope['id']
             scope_type_old = scope['attributes']['asset_type']
+            scope_string_old = scope['attributes']['asset_identifier']
+            # scope_state = scope['attributes']['state']
             try:
                 newlist_scope = next(scope for scope in newlist_target['relationships']['structured_scopes']['data'] if scope['id'] == oldlist_scope_id)
+                # Select the attributes from the dictionary and iterate over its keys
+                scope_changes = []
+                for key in scope['attributes'].keys():
+                    try:
+                        pass
+                    except KeyError:
+                        # If the key is not found in the newlist, then the scope attribute is missing
+                        scope_changes.append(f"Removed Attribute: {key}\nFrom Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
+                if scope_changes:
+                    scope_changes_str = '\n'.join(scope_changes)
+                    print(f"changes for target: {target_name_old}:\nURL:{target_url_old}\n{'-'*15}\n{scope_changes_str}")
+                    os.popen(f"notifio_sender --title 'H1 Scope Changes' --discord.targets_scope \"Changes for {target_name_old}:\n{'-'*5}\n{scope_changes_str}\" > /dev/null 2>&1")
+                    # seperator
+                    print("-" * 40)
             except StopIteration:
-                print(f"Scope {oldlist_scope_id} removed from {oldlist_target['attributes']['name']}")
-                os.popen(f"notifio_sender --title 'Scope removed fron {target_name_old}' --discord.targets_scope \"Scope: {oldlist_scope_id}\nScope Type: {scope_type_old} removed from {target_name_old}\nTarget type: {target_type_old}\nURL: {target_url_old}\" > /dev/null 2>&1")
+                print(f"Scope {scope_string_old} removed from {oldlist_target['attributes']['name']}")
+                os.popen(f"notifio_sender --title 'Scope removed fron {target_name_old}' --discord.targets_scope \"Scope: {scope_string_old}\nScope Type: {scope_type_old} removed from {target_name_old}\nTarget type: {target_type_old}\nURL: {target_url_old}\" > /dev/null 2>&1")
                 print('-' * 40)
     except StopIteration:
         print(f"Target missing: {oldlist_target['attributes']['name']}\nHandle: {oldlist_target['attributes']['handle']}\n")
