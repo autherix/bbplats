@@ -84,7 +84,7 @@ for newlist_target in h1_tgts_new_full:
             new_tgt_scope.append(f"Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
         # Join the list of scopes into a string
         new_tgt_scope_str = '\n----------\n'.join(new_tgt_scope)
-        os.popen(f"notifio_sender --title 'New target: {target_name}' --discord.targets_base \"New target: {target_name}\nHandle: {target_handle}\nTarget scopes are:\n\t{new_tgt_scope_str}\" > /dev/null 2>&1")
+        os.popen(f"notifio_sender --title 'New target: {target_name}' --discord.targets_base \"New target: {target_name}\nHandle: {target_handle}\nTarget scopes are:\n----------\n{new_tgt_scope_str}\" > /dev/null 2>&1")
         print('-' * 40)
         continue
 # Now reverse the process and check if any targets are missing from the new list
