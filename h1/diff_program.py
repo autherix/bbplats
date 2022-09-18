@@ -42,7 +42,7 @@ for newlist_target in h1_tgts_new_full:
         if tgt_changes:
             tgt_changes_str = '\n'.join(tgt_changes)
             print(f"changes for {target_name}:\n{'-'*15}\n{tgt_changes_str}")
-            os.popen(f"notifio_sender --discord.targets_base \"Changes for {target_name}:\nTarget Type: #{target_type}\nTarget URL: {target_url}\n{'-'*15}\n{tgt_changes_str}\" > /dev/null 2>&1")
+            os.popen(f"notifio_sender --title 'HackerOne Target Change' --discord.targets_base --discord.message \"Target_name: {target_name}\nTarget_url: {target_url}\nTarget_type: #{target_type}\nChanges are:\n{tgt_changes_str}\" > /dev/null 2>&1")
             # seperator
             print("-" * 40)
         
