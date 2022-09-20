@@ -367,7 +367,7 @@ for program_info in programs_info:
 
         # if len(programs_details) mode 10 equals 0, then 
         if len(programs_details) % 10 == 0:
-            print(f"[+] Fetched {len(programs_details)}/{len(programs_info)} programs details", end='\r')
+            print(f"[+] Fetched {len(programs_details)}/{len(programs_info)} programs details")
 
 # Save program_details to a file json called programs_details.json
 with open(f'/ptv/healer/bbplats/bc/programs_details_new.json', 'w') as f:
