@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env /ptv/healer/bbplats/h1/.venv/bin/python3
 
 import os, sys, time, json, requests, yaml, asyncio
 

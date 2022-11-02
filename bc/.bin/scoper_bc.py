@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env /ptv/healer/bbplats/bc/.venv/bin/python3
 
 import sys, json
 

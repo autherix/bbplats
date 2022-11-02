@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env /ptv/healer/bbplats/h1/.venv/bin/python3
 
 import os, sys, time, json, requests, argparse, yaml, asyncio
 from replace import replace_content
@@ -6,13 +6,22 @@ from replace import replace_content
 start_time = time.time()
 
 # Read the file h1_tgts_new_full.json and parse as json
-with open('/ptv/healer/bbplats/h1/h1_tgts_new_full.json', 'r') as f_new:
-    h1_tgts_new_full = json.load(f_new)
-
+try:
+    with open('/ptv/healer/bbplats/h1/h1_tgts_new_full.json', 'r') as f_new:
+        h1_tgts_new_full = json.load(f_new)
+# If file not found
+except FileNotFoundError:
+    print('File h1_tgts_new_full.json not found, please run get_program.py first')
+    sys.exit(1)
 # Read the file h1_tgts_old_full.json and parse as json
-with open('/ptv/healer/bbplats/h1/h1_tgts_old_full.json', 'r') as f_old:
-    h1_tgts_old_full = json.load(f_old)
-
+try:
+    with open('/ptv/healer/bbplats/h1/h1_tgts_old_full.json', 'r') as f_old:
+        h1_tgts_old_full = json.load(f_old)
+except FileNotFoundError:
+    # Copy the file h1_tgts_new_full.json to h1_tgts_old_full.json and print a message and exit, use os.popen to copy the file, if successful print a message and exit
+    if os.popen('cp /ptv/healer/bbplats/h1/h1_tgts_new_full.json /ptv/healer/bbplats/h1/h1_tgts_old_full.json').read():
+        print('No h1_tgts_old_full.json file found, copied h1_tgts_new_full.json to h1_tgts_old_full.json, Please run this program again')
+    sys.exit(1)
 # Iterate through the h1_tgts_new_full list 
 for newlist_target in h1_tgts_new_full:
     # Select the id from the newlist_target

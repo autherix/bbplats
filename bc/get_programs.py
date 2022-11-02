@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env /ptv/healer/bbplats/bc/.venv/bin/python3
 
 import os, requests, sys, time, json, yaml, argparse, jdatetime, datetime, html
 from bs4 import BeautifulSoup

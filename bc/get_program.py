@@ -61,6 +61,7 @@ if not logged_in:
             creds = yaml.load(stream, Loader=yaml.FullLoader)
         except yaml.YAMLError as exc:
             print(exc)
+            sys.exit(1)
     creds = creds['healer']['bbplats']['bugcrowd']
     # Select elements email and password 
     email = creds['email']
@@ -367,7 +368,8 @@ for program_info in programs_info:
 
         # if len(programs_details) mode 10 equals 0, then 
         if len(programs_details) % 10 == 0:
-            print(f"[+] Fetched {len(programs_details)}/{len(programs_info)} programs details")
+            # Print on single line
+            print(f"[+] Fetched {len(programs_details)}/{len(programs_info)} programs details" , end='\r')
 
 # Save program_details to a file json called programs_details.json
 with open(f'/ptv/healer/bbplats/bc/programs_details_new.json', 'w') as f:

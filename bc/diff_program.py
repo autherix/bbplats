@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env /ptv/healer/bbplats/bc/.venv/bin/python3
 
 import os, sys, time, json, requests, argparse, yaml, asyncio
 from replace import replace_content
@@ -6,12 +6,21 @@ from replace import replace_content
 start_time = time.time()
 
 # Read file /ptv/healer/bbplats/bc/programs_details_new.json and parse as json 
-with open('/ptv/healer/bbplats/bc/programs_details_new.json') as f_new:
-    new_programs_info = json.load(f_new)
+try:
+    with open('/ptv/healer/bbplats/bc/programs_details_new.json') as f_new:
+        new_programs_info = json.load(f_new)
+except FileNotFoundError:
+    print("File /ptv/healer/bbplats/bc/programs_details_new.json not found, please run the get_program.py script first")
+    sys.exit(1)
 
 # Read file /ptv/healer/bbplats/bc/programs_details_old.json and parse as json
-with open('/ptv/healer/bbplats/bc/programs_details_old.json') as f_old:
-    old_programs_info = json.load(f_old)
+try:
+    with open('/ptv/healer/bbplats/bc/programs_details_old.json') as f_old:
+        old_programs_info = json.load(f_old)
+except FileNotFoundError:
+    # Copy the new_programs_info to old_programs_info if the old_programs_info file is not found, use popen
+    os.popen("cp /ptv/healer/bbplats/bc/programs_details_new.json /ptv/healer/bbplats/bc/programs_details_old.json")
+    sys.exit(1)
 
 # Iterate through the new programs info and get the program code (sth like username)
 program_changes = []
@@ -59,27 +68,30 @@ for new_program in new_programs_info:
             if group_reward_range:
                 # Iterate over the group_reward_range keys 
                 for key in group_reward_range.keys():
-                    if key == "1":
-                        # For p1 vulns
-                        p1_min = group_reward_range[key]['min']
-                        p1_max = group_reward_range[key]['max']
-                    elif key == "2":
-                        # For p2 vulns
-                        p2_min = group_reward_range[key]['min']
-                        p2_max = group_reward_range[key]['max']
-                    elif key == "3":
-                        # For p3 vulns
-                        p3_min = group_reward_range[key]['min']
-                        p3_max = group_reward_range[key]['max']
-                    elif key == "4":
-                        # For p4 vulns
-                        p4_min = group_reward_range[key]['min']
-                        p4_max = group_reward_range[key]['max']
-                    elif key == "5":
-                        # For p5 vulns
-                        p5_min = group_reward_range[key]['min']
-                        p5_max = group_reward_range[key]['max']
-                group_reward_range_str = f"p1: {p1_min}-{p1_max}\np2: {p2_min}-{p2_max}\np3: {p3_min}-{p3_max}\np4: {p4_min}-{p4_max}\np5: {p5_min}-{p5_max}"
+                    try:
+                        if key == "1":
+                            # For p1 vulns
+                            p1_min = group_reward_range[key]['min']
+                            p1_max = group_reward_range[key]['max']
+                        elif key == "2":
+                            # For p2 vulns
+                            p2_min = group_reward_range[key]['min']
+                            p2_max = group_reward_range[key]['max']
+                        elif key == "3":
+                            # For p3 vulns
+                            p3_min = group_reward_range[key]['min']
+                            p3_max = group_reward_range[key]['max']
+                        elif key == "4":
+                            # For p4 vulns
+                            p4_min = group_reward_range[key]['min']
+                            p4_max = group_reward_range[key]['max']
+                        elif key == "5":
+                            # For p5 vulns
+                            p5_min = group_reward_range[key]['min']
+                            p5_max = group_reward_range[key]['max']
+                        group_reward_range_str = f"p1: {p1_min}-{p1_max}\np2: {p2_min}-{p2_max}\np3: {p3_min}-{p3_max}\np4: {p4_min}-{p4_max}\np5: {p5_min}-{p5_max}"
+                    except Exception as e:
+                        group_reward_range_str = "No valid reward range"
             else: 
                 group_reward_range_str = "No reward range"
             group_target_info = new_group['targets_info']

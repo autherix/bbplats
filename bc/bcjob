@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 source ~/.profile
 source ~/.bashrc
-source /ptv/add_to_bash
-source /ptv/add_to_aliases
-source /ptv/add_to_path
+source /ptv/add_to_bashrc.sh
+source /ptv/add_to_aliases.sh
+source /ptv/add_to_path.sh
 source /ptv/healer/bbplats/bc/.venv/bin/activate
+# Create folder /ptv/healer/bbplats/bc/logs/ if does not exist
+mkdir -p /ptv/healer/bbplats/bc/logs/
 seplog >> /ptv/healer/bbplats/bc/logs/bcjob.log
 # echo date,time,venv and current working directory
 echo "[+] Current date and time: $(TZ=":Asia/Tehran" date)" >> /ptv/healer/bbplats/bc/logs/bcjob.log
