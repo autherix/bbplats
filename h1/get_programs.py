@@ -14,6 +14,10 @@ creds = creds['healer']['bbplats']['h1']
 h1username = creds['h1username']
 h1token = creds['h1token']
 
+# Print all credentials to the console
+print(f"Username: {h1username} Token: {h1token}")
+
+
 # Run a notifio_sender script to send a notification to the discord.debug channel, saying that the script has started
 # os.popen("notifio_sender --title 'Job started' --discord.debug \"Started the get_programs.py script\" > /dev/null 2>&1")
 # os.popen("notifio_sender --discord.debug 'HackerOne: Started getting programs' > /dev/null 2>&1")
@@ -25,6 +29,13 @@ def get_h1_tgts(h1username,h1token,page_num, page_size=100):
     # The request is authenticated with the username and token
     # The response is stored in the variable r
     r = requests.get('https://api.hackerone.com/v1/hackers/programs', auth=(h1username, h1token), headers={'Accept': 'application/json'}, params={'page[number]': page_num, 'page[size]': page_size})
+    # If the response is not 200, print the response code and exit the script with exit code 1
+    if r.status_code != 200:
+        print(f"Error: {r.status_code}")
+        # If the response is 401, print the script has failed because of an authentication error
+        if r.status_code == 401:
+            print("Error: Authentication failed")
+        sys.exit(1)
     # Return the response
     return r
 

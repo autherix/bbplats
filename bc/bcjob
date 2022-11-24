@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 source ~/.profile
 source ~/.bashrc
-source /ptv/add_to_bashrc.sh
-source /ptv/add_to_aliases.sh
-source /ptv/add_to_path.sh
-source /ptv/healer/bbplats/bc/.venv/bin/activate
+seplog="▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃"
+# source /ptv/add_to_bashrc.sh
+# source /ptv/add_to_aliases.sh
+# source /ptv/add_to_path.sh
+# source /ptv/healer/bbplats/bc/.venv/bin/activate
 # Create folder /ptv/healer/bbplats/bc/logs/ if does not exist
 mkdir -p /ptv/healer/bbplats/bc/logs/
-seplog >> /ptv/healer/bbplats/bc/logs/bcjob.log
+echo $seplog >> /ptv/healer/bbplats/bc/logs/bcjob.log
 # echo date,time,venv and current working directory
 echo "[+] Current date and time: $(TZ=":Asia/Tehran" date)" >> /ptv/healer/bbplats/bc/logs/bcjob.log
 echo "[+] Current PATH: $PATH" >> /ptv/healer/bbplats/bc/logs/bcjob.log
@@ -21,11 +22,11 @@ if [ -z "$a" ]; then
     exit 1
 fi
 # Send a started job notification to discord.debug channel
-notifio_sender --title 'BugCrowd Job Started' --discord.debug " Started Job For bc - Fetching all programs and reporting minor and major changes" >> /ptv/healer/bbplats/bc/logs/bcjob.log
+notifio_sender --title 'BugCrowd Job Started' --discord.debug "Started Job For bc - Fetching all programs and reporting minor and major changes" >> /ptv/healer/bbplats/bc/logs/bcjob.log
 # Run the scripts
-python3 /ptv/healer/bbplats/bc/get_programs.py >> /ptv/healer/bbplats/bc/logs/bcjob.log
-python3 /ptv/healer/bbplats/bc/get_program.py >> /ptv/healer/bbplats/bc/logs/bcjob.log
-python3 /ptv/healer/bbplats/bc/diff_program.py >> /ptv/healer/bbplats/bc/logs/bcjob.log
+/ptv/healer/bbplats/bc/get_programs.py >> /ptv/healer/bbplats/bc/logs/bcjob.log
+/ptv/healer/bbplats/bc/get_program.py >> /ptv/healer/bbplats/bc/logs/bcjob.log
+/ptv/healer/bbplats/bc/diff_program.py >> /ptv/healer/bbplats/bc/logs/bcjob.log
 # Send a finished job notification to logs file
 echo "Job finished" >> /ptv/healer/bbplats/bc/logs/bcjob.log
 echo "" >> /ptv/healer/bbplats/bc/logs/bcjob.log

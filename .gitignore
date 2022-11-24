@@ -1,3 +1,6 @@
 *.json
 bounty-targets/
 bc/cookies.txt
+*/__pycache__/
+*/.venv/
+*/logs/
