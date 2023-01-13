@@ -206,6 +206,18 @@ for new_program in new_programs_info:
             group_in_scope_info = new_group_info['in_scope']
             group_reward_range_info = new_group_info['reward_range']
             # Iterate over the group_reward_range keys 
+            p1_min = "Not Set"
+            p1_max = "Not Set"
+            p1_min = "Not Set"
+            p1_max = "Not Set"
+            p2_min = "Not Set"
+            p2_max = "Not Set"
+            p3_min = "Not Set"
+            p3_max = "Not Set"
+            p4_min = "Not Set"
+            p4_max = "Not Set"
+            p5_min = "Not Set"
+            p5_max = "Not Set"
             for key in group_reward_range_info.keys():
                 if key == "1":
                     # For p1 vulns

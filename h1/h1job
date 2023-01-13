@@ -2,9 +2,9 @@
 source ~/.profile
 source ~/.bashrc
 seplog="▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃"
-# source /ptv/add_to_bashrc.sh
-# source /ptv/add_to_aliases.sh
-source /ptv/add_to_path.sh
+ source /ptv/add_to_bashrc.sh
+ source /ptv/add_to_aliases.sh
+ source /ptv/add_to_path.sh
 # Create folder /ptv/healer/bbplats/h1/logs/ if does not exist
 mkdir -p /ptv/healer/bbplats/h1/logs/
 echo $seplog >> /ptv/healer/bbplats/h1/logs/h1job.log
@@ -17,7 +17,7 @@ echo "[+] Current working directory: $(pwd)" >> /ptv/healer/bbplats/h1/logs/h1jo
 a=$(which notifio_sender)
 # If a is empty, then notifio_sender is not available
 if [ -z "$a" ]; then
-    echo "notifio_sender is not available. Please install it first."
+    echo "notifio_sender is not available. Please install it first." >> /ptv/healer/bbplats/h1/logs/h1job.log
     exit 1
 fi
 # Send a started job notification to discord.debug channel

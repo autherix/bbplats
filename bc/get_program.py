@@ -328,6 +328,9 @@ for program_info in programs_info:
             # If the response is not 200, then we have an error, so print the error and continue
             if group_json_raw.status_code != 200:
                 print(f"[-] Error fetching group: {group_url}")
+                # Print the status code and the text of the response
+                print(f"\t=> Status code: {group_json_raw.status_code}")
+                print(f"\t=> Response Text: {group_json_raw.text}")
                 continue
             
             group_json = group_json_raw.json()
