@@ -1,12 +1,53 @@
-#!/usr/bin/env /ptv/healer/bbplats/h1/.venv/bin/python3
+#!/usr/bin/env python3
+import os, sys
+def LoadVenv():
+    bin_dir = os.path.dirname(os.path.abspath(__file__))
+    venv_dir = os.path.join(os.path.dirname(bin_dir), '.venv')
+    venv_parent_dir = os.path.dirname(venv_dir)
+
+    # Check if the virtual environment exists
+    if not os.path.exists(venv_dir):
+        print("Virtual environment not found. Trying to create one...")
+        # Run a command to create the virtual environment in the parent path
+        res = os.system(f'python3 -m venv {venv_dir}')
+        if res != 0:
+            print('Failed to create virtual environment.')
+            exit(1)
+        else:
+            print('Virtual environment created.')
+            # If there is a requirements.txt in the parent path, install the dependencies
+    requirements_txt = os.path.join(venv_parent_dir, 'requirements.txt')
+    if os.path.exists(requirements_txt):
+        source_cmd = f'source {os.path.join(venv_dir, "bin", "activate")} > /dev/null 2>&1'
+        pyinstall_cmd = f'python3 -m pip install -r {requirements_txt} > /dev/null 2>&1'
+        res = os.system(f'bash -c "{source_cmd} && {pyinstall_cmd} && deactivate > /dev/null 2>&1"')
+        # res = os.system(f'{os.path.join(venv_dir, "bin", "python3")} 
+        if res != 0:
+            print('Failed to install dependencies. requirements.txt may be corrupted or not accessible.')
+            exit(1)
+    else:
+        print('requirements.txt not found or not accessible. Going forward...')
+        # exit(1)
+    
+    # Try to activate the virtual environment
+    os_join_path = os.path.join(venv_dir, 'bin', 'python3')
+    # re-run the program using the virtual environment's Python interpreter
+    if not sys.executable.startswith(os_join_path):
+        res = os.execv(os_join_path, [os_join_path] + sys.argv)
+LoadVenv()
 
 import os, sys, time, json, requests, argparse, yaml, asyncio, time, jdatetime, datetime, pytz
+
+# get current running script path
+script_path = os.path.dirname(os.path.realpath(__file__))
+# get parent path
+parent_dir = os.path.dirname(script_path)
 
 # Get current time and save it to a variable called start_time in unix format
 start_time = time.time()
 
 # Read the file /ptv/healer/creds.yaml and parse as yaml
-with open("/ptv/healer/creds.yaml", 'r') as stream:
+with open(parent_dir + '/creds.yaml', 'r') as stream:
     try:
         creds = yaml.load(stream, Loader=yaml.FullLoader)
     except yaml.YAMLError as exc:
@@ -23,7 +64,7 @@ def get_program(h1username, h1token, handle):
     return r
 
 # read file h1_tgts_new.json and parse as json
-with open('/ptv/healer/bbplats/h1/h1_tgts_new.json', 'r') as f:
+with open(parent_dir + '/h1_tgts_new.json', 'r') as f:
     h1_tgts = json.load(f)
 
 
@@ -52,7 +93,7 @@ for i in h1_tgts_new_handles:
 
 
 # Write the list h1_tgts_new_full to the file h1_tgts_new_full.json
-with open('/ptv/healer/bbplats/h1/h1_tgts_new_full.json', 'w') as f:
+with open(parent_dir + '/h1_tgts_new_full.json', 'w') as f:
     json.dump(h1_tgts_new_full, f)
 
 # Get current time and save it to a variable called end_time in unix format

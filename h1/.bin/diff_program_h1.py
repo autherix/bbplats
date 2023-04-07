@@ -1,13 +1,55 @@
-#!/usr/bin/env /ptv/healer/bbplats/h1/.venv/bin/python3
+#!/usr/bin/env python3
+import os, sys
+def LoadVenv():
+    bin_dir = os.path.dirname(os.path.abspath(__file__))
+    venv_dir = os.path.join(os.path.dirname(bin_dir), '.venv')
+    venv_parent_dir = os.path.dirname(venv_dir)
+
+    # Check if the virtual environment exists
+    if not os.path.exists(venv_dir):
+        print("Virtual environment not found. Trying to create one...")
+        # Run a command to create the virtual environment in the parent path
+        res = os.system(f'python3 -m venv {venv_dir}')
+        if res != 0:
+            print('Failed to create virtual environment.')
+            exit(1)
+        else:
+            print('Virtual environment created.')
+            # If there is a requirements.txt in the parent path, install the dependencies
+    requirements_txt = os.path.join(venv_parent_dir, 'requirements.txt')
+    if os.path.exists(requirements_txt):
+        source_cmd = f'source {os.path.join(venv_dir, "bin", "activate")} > /dev/null 2>&1'
+        pyinstall_cmd = f'python3 -m pip install -r {requirements_txt} > /dev/null 2>&1'
+        res = os.system(f'bash -c "{source_cmd} && {pyinstall_cmd} && deactivate > /dev/null 2>&1"')
+        # res = os.system(f'{os.path.join(venv_dir, "bin", "python3")} 
+        if res != 0:
+            print('Failed to install dependencies. requirements.txt may be corrupted or not accessible.')
+            exit(1)
+    else:
+        print('requirements.txt not found or not accessible. Going forward...')
+        # exit(1)
+    
+    # Try to activate the virtual environment
+    os_join_path = os.path.join(venv_dir, 'bin', 'python3')
+    # re-run the program using the virtual environment's Python interpreter
+    if not sys.executable.startswith(os_join_path):
+        res = os.execv(os_join_path, [os_join_path] + sys.argv)
+LoadVenv()
 
 import os, sys, time, json, requests, argparse, yaml, asyncio
-from replace import replace_content
+from mod_utils import replace_content
+
+# get current running script path
+script_path = os.path.dirname(os.path.realpath(__file__))
+# get parent path
+parent_dir = os.path.dirname(script_path)
+
 # Get current time and save it to a variable called start_time in unix format
 start_time = time.time()
 
 # Read the file h1_tgts_new_full.json and parse as json
 try:
-    with open('/ptv/healer/bbplats/h1/h1_tgts_new_full.json', 'r') as f_new:
+    with open(parent_dir + '/h1_tgts_new_full.json', 'r') as f_new:
         h1_tgts_new_full = json.load(f_new)
 # If file not found
 except FileNotFoundError:
@@ -15,11 +57,12 @@ except FileNotFoundError:
     sys.exit(1)
 # Read the file h1_tgts_old_full.json and parse as json
 try:
-    with open('/ptv/healer/bbplats/h1/h1_tgts_old_full.json', 'r') as f_old:
+    with open(parent_dir + '/h1_tgts_old_full.json', 'r') as f_old:
         h1_tgts_old_full = json.load(f_old)
 except FileNotFoundError:
     # Copy the file h1_tgts_new_full.json to h1_tgts_old_full.json and print a message and exit, use os.popen to copy the file, if successful print a message and exit
-    if os.popen('cp /ptv/healer/bbplats/h1/h1_tgts_new_full.json /ptv/healer/bbplats/h1/h1_tgts_old_full.json').read():
+    if os.popen(f"cp {parent_dir}/h1_tgts_new_full.json {parent_dir}/h1_tgts_old_full.json").read():
+    # if os.popen('cp /ptv/healer/bbplats/h1/h1_tgts_new_full.json /ptv/healer/bbplats/h1/h1_tgts_old_full.json').read():
         print('No h1_tgts_old_full.json file found, copied h1_tgts_new_full.json to h1_tgts_old_full.json, Please run this program again')
     sys.exit(1)
 # Iterate through the h1_tgts_new_full list 
@@ -51,7 +94,7 @@ for newlist_target in h1_tgts_new_full:
         if tgt_changes:
             tgt_changes_str = '\n'.join(tgt_changes)
             print(f"changes for {target_name}:\n{'-'*15}\n{tgt_changes_str}")
-            os.popen(f"notifio_sender --title 'HackerOne Target Change' --discord.targets_base --discord.message \"Target_name: {target_name}\nTarget_url: {target_url}\nTarget_type: #{target_type}\nChanges are:\n{tgt_changes_str}\" > /dev/null 2>&1")
+            os.popen(f"notifio_sender --title 'HackerOne Target Change' --discord.targets_base --discord.message \"Target_name: {target_name}\nTarget_url: {target_url}\nTarget_type: #{target_type}\nChanges are:\n{tgt_changes_str}\"# > /dev/null ")
             # seperator
             print("-" * 40)
         
@@ -76,13 +119,13 @@ for newlist_target in h1_tgts_new_full:
                 if scope_changes:
                     scope_changes_str = '\n'.join(scope_changes)
                     print(f"changes for target: {newlist_target['attributes']['name']}:\nURL:{target_url}\n{'-'*15}\n{scope_changes_str}")
-                    os.popen(f"notifio_sender --title 'H1 Scope Changes' --discord.targets_scope \"Changes for {target_name}:\nTarget Type: #{target_type}\nTarget URL: {target_url}\n{'-'*15}\n{scope_changes_str}\" > /dev/null 2>&1")
+                    os.popen(f"notifio_sender --title 'H1 Scope Changes' --discord.targets_scope \"Changes for {target_name}:\nTarget Type: #{target_type}\nTarget URL: {target_url}\n{'-'*15}\n{scope_changes_str}\"# > /dev/null ")
                     # seperator
                     print("-" * 40)
             except StopIteration:
                 # If the dictionary is not found, print the following message
                 print(f"New Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nScope ID: {newlist_scope_id}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
-                os.popen(f"notifio_sender --title 'New scope on {target_name}\nTarget URL:{target_url}\nTarget Type: #{target_type}' --discord.targets_scope \"New scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nScope ID: {newlist_scope_id}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\" > /dev/null 2>&1")
+                os.popen(f"notifio_sender --title 'New scope on {target_name}\nTarget URL:{target_url}\nTarget Type: #{target_type}' --discord.targets_scope \"New scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nScope ID: {newlist_scope_id}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\"# > /dev/null ")
                 # seperator
                 print("-" * 40)
     except StopIteration:
@@ -93,7 +136,7 @@ for newlist_target in h1_tgts_new_full:
             new_tgt_scope.append(f"Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
         # Join the list of scopes into a string
         new_tgt_scope_str = '\n----------\n'.join(new_tgt_scope)
-        os.popen(f"notifio_sender --title 'New target: {target_name}' --discord.targets_base \"New target: {target_name}\nTarget URL: {target_url}\nTarget Type: #{target_type}\n{'-'*15}\n{new_tgt_scope_str}\" > /dev/null 2>&1")
+        os.popen(f"notifio_sender --title 'New target: {target_name}' --discord.targets_base \"New target: {target_name}\nTarget URL: {target_url}\nTarget Type: #{target_type}\n{'-'*15}\n{new_tgt_scope_str}\"# > /dev/null ")
         print('-' * 40)
         continue
 # Now reverse the process and check if any targets are missing from the new list
@@ -131,21 +174,22 @@ for oldlist_target in h1_tgts_old_full:
                 if scope_changes:
                     scope_changes_str = '\n'.join(scope_changes)
                     print(f"changes for target: {target_name_old}:\nURL:{target_url_old}\n{'-'*15}\n{scope_changes_str}")
-                    os.popen(f"notifio_sender --title 'H1 Scope Changes' --discord.targets_scope \"Changes for {target_name_old}:\nTarget Type: #{target_type_old}\nTarget URL: {target_url_old}\n{'-'*15}\n{scope_changes_str}\" > /dev/null 2>&1")
+                    os.popen(f"notifio_sender --title 'H1 Scope Changes' --discord.targets_scope \"Changes for {target_name_old}:\nTarget Type: #{target_type_old}\nTarget URL: {target_url_old}\n{'-'*15}\n{scope_changes_str}\"# > /dev/null ")
                     # seperator
                     print("-" * 40)
             except StopIteration:
                 print(f"Scope {scope_string_old} removed from {oldlist_target['attributes']['name']}")
-                os.popen(f"notifio_sender --title 'Scope removed fron {target_name_old}' --discord.targets_scope \"Scope: {scope_string_old}\nScope Type: {scope_type_old} removed from {target_name_old}\nTarget URL: {target_url_old}\nTarget Type: #{target_type_old}\" > /dev/null 2>&1")
+                os.popen(f"notifio_sender --title 'Scope removed fron {target_name_old}' --discord.targets_scope \"Scope: {scope_string_old}\nScope Type: {scope_type_old} removed from {target_name_old}\nTarget URL: {target_url_old}\nTarget Type: #{target_type_old}\"# > /dev/null ")
                 print('-' * 40)
     except StopIteration:
         print(f"Target missing: {oldlist_target['attributes']['name']}\nHandle: {oldlist_target['attributes']['handle']}\n")
         # Save the format
-        os.popen(f"notifio_sender --title 'Target missing: {target_name_old}' --discord.targets_base \"Target missing: {target_name_old}\nTarget Type was: #{target_type_old}\nTarget URL: {target_url_old}\" > /dev/null 2>&1")
+        os.popen(f"notifio_sender --title 'Target missing: {target_name_old}' --discord.targets_base \"Target missing: {target_name_old}\nTarget Type was: #{target_type_old}\nTarget URL: {target_url_old}\"# > /dev/null ")
         print('-' * 40)
         continue
 # After all done with no error, save the new list to the old list
-replace_content('/ptv/healer/bbplats/h1/h1_tgts_new_full.json', '/ptv/healer/bbplats/h1/h1_tgts_old_full.json')
+replace_content(parent_dir + '/h1_tgts_new_full.json', parent_dir + '/h1_tgts_old_full.json')
+# replace_content('/ptv/healer/bbplats/h1/h1_tgts_new_full.json', '/ptv/healer/bbplats/h1/h1_tgts_old_full.json')
 
 # Print the time it took to run the script
 print("--- %s seconds ---" % (time.time() - start_time))

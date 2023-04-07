@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Get current script working directory
+binpath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Check whether crontab is installed
 if [ ! -x /usr/bin/crontab ]; then
     echo "Crontab is not installed. Please install it first."
@@ -25,7 +28,8 @@ fi
 
 # Define the cron job to run the script every 20 minutes
 # cronjob="*/1 * * * * /ptv/healer/bbplats/bc/test.sh"
-cronjob="*/20 * * * * /ptv/healer/bbplats/bc/bcjob"
+cronjob="*/20 * * * * $binpath/bcjob"
+# cronjob="*/20 * * * * /ptv/healer/bbplats/bc/bcjob"
 
 # Add the cron job
 (crontab -l 2>/dev/null; echo "$cronjob") | crontab - && echo "Cron job added successfully."

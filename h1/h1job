@@ -1,32 +1,59 @@
 #!/usr/bin/env bash
-source ~/.profile
-source ~/.bashrc
+# Get current script working directory
+binpath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 seplog="▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃"
- source /ptv/add_to_bashrc.sh
- source /ptv/add_to_aliases.sh
- source /ptv/add_to_path.sh
-# Create folder /ptv/healer/bbplats/h1/logs/ if does not exist
-mkdir -p /ptv/healer/bbplats/h1/logs/
-echo $seplog >> /ptv/healer/bbplats/h1/logs/h1job.log
+# Create folder $binpath/logs/ if does not exist
+mkdir -p "$binpath/logs"
+echo $seplog >> $binpath/logs/h1job.log
+echo "Job started" >> $binpath/logs/h1job.log
+source /root/.bashrc
+# source /ptv/add_to_path.sh
+# source /ptv/setup-everything/.bin/setup-bashrc-bin-path.sh
+
+srclist=()
+# define an empty array
+declare -a srclist
+# iterate over lines of bashrc_content and echo them
+while IFS= read -r line; do
+    # If line starts with 'source', then add it to srclist
+    if [[ $line == source* ]]; then
+        # select everything after 'source '
+        # echo "${line:7}" >> $binpath/logs/h1job.log
+        srclist+=("${line:7}")
+    fi
+done < ~/.bashrc
+
+# echo all members of srclist at once
+# echo "${srclist[@]}" >> $binpath/logs/h1job.log
+
+for i in "${srclist[@]}"
+do
+    # echo len of srclist
+    # echo "${#srclist[@]}" >> $binpath/logs/h1job.log
+    # echo "$i" >> $binpath/logs/h1job.log
+    source "$i"
+    # echo "pass" >> $binpath/logs/h1job.log
+done
+
 # echo date,time,venv and current working directory
-echo "[+] Current date and time: $(TZ=":Asia/Tehran" date)" >> /ptv/healer/bbplats/h1/logs/h1job.log
-echo "[+] Current PATH: $PATH" >> /ptv/healer/bbplats/h1/logs/h1job.log
-echo "[+] Current virtual environment: $(which python3)" >> /ptv/healer/bbplats/h1/logs/h1job.log
-echo "[+] Current working directory: $(pwd)" >> /ptv/healer/bbplats/h1/logs/h1job.log
+echo "[+] Current date and time: $(TZ=":Asia/Tehran" date)" >> $binpath/logs/h1job.log
+echo "[+] Current PATH: $PATH" >> $binpath/logs/h1job.log
+echo "[+] Current virtual environment: $(which python3)" >> $binpath/logs/h1job.log
+echo "[+] Current working directory: $(pwd)" >> $binpath/logs/h1job.log
 # Check whether notifioo_sender is available
 a=$(which notifio_sender)
 # If a is empty, then notifio_sender is not available
 if [ -z "$a" ]; then
-    echo "notifio_sender is not available. Please install it first." >> /ptv/healer/bbplats/h1/logs/h1job.log
+    echo "notifio_sender is not available. Please install it first." >> $binpath/logs/h1job.log
     exit 1
 fi
 # Send a started job notification to discord.debug channel
-notifio_sender --title 'HackerOne Job Started' --discord.debug "Started Job For H1 - Fetching all programs and reporting minor and major changes" >> /ptv/healer/bbplats/h1/logs/h1job.log
+notifio_sender --title 'HackerOne Job Started' --discord.debug "Started Job For H1 - Fetching all programs and reporting minor and major changes" >> $binpath/logs/h1job.log
 # Run the scripts
-/ptv/healer/bbplats/h1/get_programs.py >> /ptv/healer/bbplats/h1/logs/h1job.log
-/ptv/healer/bbplats/h1/get_program.py >> /ptv/healer/bbplats/h1/logs/h1job.log
-/ptv/healer/bbplats/h1/diff_program.py >> /ptv/healer/bbplats/h1/logs/h1job.log
+$binpath/.bin/get_programs_h1.py >> $binpath/logs/h1job.log
+$binpath/.bin/get_program_h1.py >> $binpath/logs/h1job.log
+$binpath/.bin/diff_program_h1.py >> $binpath/logs/h1job.log
 # Send a finished job notification to logs file
-echo "Job finished" >> /ptv/healer/bbplats/h1/logs/h1job.log
-echo "" >> /ptv/healer/bbplats/h1/logs/h1job.log
-echo "" >> /ptv/healer/bbplats/h1/logs/h1job.log
+echo "Job finished" >> $binpath/logs/h1job.log
+echo "" >> $binpath/logs/h1job.log
+echo "" >> $binpath/logs/h1job.log

@@ -1,25 +1,67 @@
-#!/usr/bin/env /ptv/healer/bbplats/bc/.venv/bin/python3
+#!/usr/bin/env python3
+import os, sys
+def LoadVenv():
+    bin_dir = os.path.dirname(os.path.abspath(__file__))
+    venv_dir = os.path.join(os.path.dirname(bin_dir), '.venv')
+    venv_parent_dir = os.path.dirname(venv_dir)
+
+    # Check if the virtual environment exists
+    if not os.path.exists(venv_dir):
+        print("Virtual environment not found. Trying to create one...")
+        # Run a command to create the virtual environment in the parent path
+        res = os.system(f'python3 -m venv {venv_dir}')
+        if res != 0:
+            print('Failed to create virtual environment.')
+            exit(1)
+        else:
+            print('Virtual environment created.')
+            # If there is a requirements.txt in the parent path, install the dependencies
+    requirements_txt = os.path.join(venv_parent_dir, 'requirements.txt')
+    if os.path.exists(requirements_txt):
+        source_cmd = f'source {os.path.join(venv_dir, "bin", "activate")} > /dev/null 2>&1'
+        pyinstall_cmd = f'python3 -m pip install -r {requirements_txt} > /dev/null 2>&1'
+        res = os.system(f'bash -c "{source_cmd} && {pyinstall_cmd} && deactivate > /dev/null 2>&1"')
+        # res = os.system(f'{os.path.join(venv_dir, "bin", "python3")} 
+        if res != 0:
+            print('Failed to install dependencies. requirements.txt may be corrupted or not accessible.')
+            exit(1)
+    else:
+        print('requirements.txt not found or not accessible. Going forward...')
+        # exit(1)
+    
+    # Try to activate the virtual environment
+    os_join_path = os.path.join(venv_dir, 'bin', 'python3')
+    # re-run the program using the virtual environment's Python interpreter
+    if not sys.executable.startswith(os_join_path):
+        res = os.execv(os_join_path, [os_join_path] + sys.argv)
+LoadVenv()
+
+# get current running script path
+script_path = os.path.dirname(os.path.realpath(__file__))
+# get parent path
+parent_dir = os.path.dirname(script_path)
 
 import os, sys, time, json, requests, argparse, yaml, asyncio
-from replace import replace_content
+from mod_utils import replace_content
 # Get current time and save it to a variable called start_time in unix format
 start_time = time.time()
 
-# Read file /ptv/healer/bbplats/bc/programs_details_new.json and parse as json 
+# Read file parent_dir/programs_details_new.json and parse as json 
 try:
-    with open('/ptv/healer/bbplats/bc/programs_details_new.json') as f_new:
+    with open(parent_dir + '/programs_details_new.json') as f_new:
         new_programs_info = json.load(f_new)
 except FileNotFoundError:
-    print("File /ptv/healer/bbplats/bc/programs_details_new.json not found, please run the get_program.py script first")
+    print(f"File {parent_dir}/programs_details_new.json not found, please run the get_program.py script first")
     sys.exit(1)
 
-# Read file /ptv/healer/bbplats/bc/programs_details_old.json and parse as json
+# Read file parent_dir/programs_details_old.json and parse as json
 try:
-    with open('/ptv/healer/bbplats/bc/programs_details_old.json') as f_old:
+    with open(parent_dir + '/programs_details_old.json') as f_old:
         old_programs_info = json.load(f_old)
 except FileNotFoundError:
     # Copy the new_programs_info to old_programs_info if the old_programs_info file is not found, use popen
-    os.popen("cp /ptv/healer/bbplats/bc/programs_details_new.json /ptv/healer/bbplats/bc/programs_details_old.json")
+    os.popen(f"cp {parent_dir}/programs_details_new.json {parent_dir}/programs_details_old.json")
+    # os.popen("cp /ptv/healer/bbplats/bc/programs_details_new.json /ptv/healer/bbplats/bc/programs_details_old.json")
     sys.exit(1)
 
 # Iterate through the new programs info and get the program code (sth like username)
@@ -53,7 +95,7 @@ for new_program in new_programs_info:
         if tgt_changes:
             tgt_changes_str = "\n----------\n".join(tgt_changes)
             print(f"Changes for program: {new_program['name']}\n{'-'*15}\n{tgt_changes_str}\n")
-            os.popen(f"notifio_sender --title 'Changes for: {new_name}' --discord.programs_base \"Changes for program: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{tgt_changes_str}\" > /dev/null 2>&1")
+            os.popen(f"notifio_sender --title 'Changes for: {new_name}' --discord.programs_base \"Changes for program: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{tgt_changes_str}\" # > /dev/null")
             print("_"*40)
 
         # Select target_groups_info->groups_all_data element from the new program dictionary
@@ -173,19 +215,19 @@ for new_program in new_programs_info:
                                     if target_changes:
                                         target_changes_str = "\n----------\n".join(target_changes)
                                         print(f"Changes for Scope:\n\t{target_name}\n{'-'*15}\n{target_changes_str}\n")
-                                        os.popen(f"notifio_sender --title 'Changes for Scope:\n\t{target_name}' --discord.targets_scope \"Changes on Scope:\n\t{target_name}\nOn Program: {new_name}\nProgram url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{target_changes_str}\" > /dev/null 2>&1")
+                                        os.popen(f"notifio_sender --title 'Changes for Scope:\n\t{target_name}' --discord.targets_scope \"Changes on Scope:\n\t{target_name}\nOn Program: {new_name}\nProgram url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{target_changes_str}\" # > /dev/null")
                                         print("_"*40)
                                 # Except if the target is not in the old group dictionary
                                 except StopIteration:
                                     # So new target is added to the group
                                     print(f"New scope: {target_name}\n{'-'*15}\nScope ID: {target_id}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n")
-                                    os.popen(f"notifio_sender --title 'New Scope Added:\n\t{target_name}' --discord.targets_scope \"New Scope On program: {new_name}\nProgram url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{'-'*10}\nScope Added to group: {group_name}\nGroup In-Scope: {group_in_scope}\nGroup Reward Range: {group_reward_range_str}\n{'-'*15}\nScope ID: {target_id}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n\" > /dev/null 2>&1")
+                                    os.popen(f"notifio_sender --title 'New Scope Added:\n\t{target_name}' --discord.targets_scope \"New Scope On program: {new_name}\nProgram url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{'-'*10}\nScope Added to group: {group_name}\nGroup In-Scope: {group_in_scope}\nGroup Reward Range: {group_reward_range_str}\n{'-'*15}\nScope ID: {target_id}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n\" # > /dev/null")
                                     print("_"*40)
 
             except StopIteration:
                 # If the group is not found, it means that it is a new group
                 print(f"New group: {group_name}\n{'-'*15}\nTarget url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n")
-                os.popen(f"notifio_sender --title 'New group: {group_name}' --discord.targets_scope \"New group: {group_name}\nOn Target: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\nGroup In Scope: {group_in_scope}\nGroup Reward Range:\n{group_reward_range_str}\n{'-'*15}\nGroup Scopes:\n{group_targets_list_str}\" > /dev/null 2>&1")
+                os.popen(f"notifio_sender --title 'New group: {group_name}' --discord.targets_scope \"New group: {group_name}\nOn Target: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\nGroup In Scope: {group_in_scope}\nGroup Reward Range:\n{group_reward_range_str}\n{'-'*15}\nGroup Scopes:\n{group_targets_list_str}\" # > /dev/null")
                 print("_"*40)
                 continue
                 print("_"*40)
@@ -256,9 +298,8 @@ for new_program in new_programs_info:
             new_group_infos.append(f"[+] Group: {group_name_info}\n\tIn Scope: {group_in_scope_info}\n\tReward Ranges:\n\t\tP1: {p1_min}-{p1_max}\n\t\tP2: {p2_min}-{p2_max}\n\t\tP3: {p3_min}-{p3_max}\n\t\tP4: {p4_min}-{p4_max}\n\t\tP5: {p5_min}-{p5_max}\n\tScopes:\n{new_group_targets_str}\n{'-'*15}")
         # Join the new_group_infos list to a string
         new_group_infos_str = "\n".join(new_group_infos)
-        os.popen(f"notifio_sender --title 'New Target: {new_name}' --discord.targets_scope \"New Target: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\nResearcher Banned: {new_resercher_banned}\nCan Submit Report: {new_can_submit_report}\n{'-'*15}\nTarget Groups:\n{'-'*15}\n{new_group_infos_str}\n{'-'*15}\n\" > /dev/null 2>&1")
+        os.popen(f"notifio_sender --title 'New Target: {new_name}' --discord.targets_scope \"New Target: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\nResearcher Banned: {new_resercher_banned}\nCan Submit Report: {new_can_submit_report}\n{'-'*15}\nTarget Groups:\n{'-'*15}\n{new_group_infos_str}\n{'-'*15}\n\" # > /dev/null")
 
 # Replace the content of the old_programs.json file with the new_programs.json file using replace_content function
-replace_content("/ptv/healer/bbplats/bc/programs_details_new.json", "/ptv/healer/bbplats/bc/programs_details_old.json")
-
+replace_content(f"{parent_dir}/old_programs.json", f"{parent_dir}/new_programs.json")
 print("Done!")

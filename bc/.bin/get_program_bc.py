@@ -1,4 +1,45 @@
-#!/usr/bin/env /ptv/healer/bbplats/bc/.venv/bin/python3
+#!/usr/bin/env python3
+import os, sys
+def LoadVenv():
+    bin_dir = os.path.dirname(os.path.abspath(__file__))
+    venv_dir = os.path.join(os.path.dirname(bin_dir), '.venv')
+    venv_parent_dir = os.path.dirname(venv_dir)
+
+    # Check if the virtual environment exists
+    if not os.path.exists(venv_dir):
+        print("Virtual environment not found. Trying to create one...")
+        # Run a command to create the virtual environment in the parent path
+        res = os.system(f'python3 -m venv {venv_dir}')
+        if res != 0:
+            print('Failed to create virtual environment.')
+            exit(1)
+        else:
+            print('Virtual environment created.')
+            # If there is a requirements.txt in the parent path, install the dependencies
+    requirements_txt = os.path.join(venv_parent_dir, 'requirements.txt')
+    if os.path.exists(requirements_txt):
+        source_cmd = f'source {os.path.join(venv_dir, "bin", "activate")} > /dev/null 2>&1'
+        pyinstall_cmd = f'python3 -m pip install -r {requirements_txt} > /dev/null 2>&1'
+        res = os.system(f'bash -c "{source_cmd} && {pyinstall_cmd} && deactivate > /dev/null 2>&1"')
+        # res = os.system(f'{os.path.join(venv_dir, "bin", "python3")} 
+        if res != 0:
+            print('Failed to install dependencies. requirements.txt may be corrupted or not accessible.')
+            exit(1)
+    else:
+        print('requirements.txt not found or not accessible. Going forward...')
+        # exit(1)
+    
+    # Try to activate the virtual environment
+    os_join_path = os.path.join(venv_dir, 'bin', 'python3')
+    # re-run the program using the virtual environment's Python interpreter
+    if not sys.executable.startswith(os_join_path):
+        res = os.execv(os_join_path, [os_join_path] + sys.argv)
+LoadVenv()
+
+# get current running script path
+script_path = os.path.dirname(os.path.realpath(__file__))
+# get parent path
+parent_dir = os.path.dirname(script_path)
 
 import os, requests, sys, time, json, yaml, argparse, jdatetime, datetime, html
 from bs4 import BeautifulSoup
@@ -7,15 +48,15 @@ from bs4 import BeautifulSoup
 start_time = time.time()
 
 # If there is a cookies.txt file, read it and parse as json
-if os.path.isfile("/ptv/healer/bbplats/bc/cookies.txt"):
-    with open("/ptv/healer/bbplats/bc/cookies.txt", 'r') as stream:
+if os.path.isfile(parent_dir + "/cookies.txt"):
+    with open(parent_dir + "/cookies.txt", 'r') as stream:
         try:
             cookies = json.load(stream)
             print("[+] Cookies File Loaded")
         except json.JSONDecodeError as exc:
             cookies = None
             # Remove cookies file
-            os.remove("/ptv/healer/bbplats/bc/cookies.txt")
+            os.remove(parent_dir + "/cookies.txt")
 else:
     cookies = None
 # If cookies is defined:
@@ -49,14 +90,14 @@ if cookies:
         logged_in = False
         cookies = None
         # Remove cookies file
-        os.remove("/ptv/healer/bbplats/bc/cookies.txt")
+        os.remove(parent_dir + "/cookies.txt")
         print("[+] Cookies are invalid, trying to load credentials")
 else: 
     logged_in = False
     print("[+] No cookies, trying to load credentials")
 if not logged_in:
-    # Read the file /ptv/healer/creds.yaml and parse as yaml
-    with open("/ptv/healer/creds.yaml", 'r') as stream:
+    # Read the file parent_dir/creds.yaml and parse as yaml
+    with open(parent_dir + "/creds.yaml", 'r') as stream:
         try:
             creds = yaml.load(stream, Loader=yaml.FullLoader)
         except yaml.YAMLError as exc:
@@ -172,7 +213,7 @@ if not logged_in:
         print("[+] Login with Credentials successful !\n")
         # Print current location
     # Save login cookies to a file, also session cookies
-    with open('/ptv/healer/bbplats/bc/cookies.txt', 'w') as f:
+    with open(parent_dir + '/cookies.txt', 'w') as f:
         json.dump(requests.utils.dict_from_cookiejar(session.cookies), f)
     print(f"[+] Saved cookies to file: {f.name}")
 
@@ -193,9 +234,9 @@ for cookie in session.cookies:
 ## Part 2: Get programs and their details
 
 
-# Read the file /ptv/healer/bbplats/bc/programs_info.json and parse it as json, if the file doesn't exist, print error message and exit 
+# Read the file parent_dir/programs_info.json and parse it as json, if the file doesn't exist, print error message and exit 
 try:
-    with open('/ptv/healer/bbplats/bc/programs_info.json', 'r') as f:
+    with open(parent_dir + '/programs_info.json', 'r') as f:
         programs_info = json.load(f)
 except FileNotFoundError:
     print("[-] File programs_info.json not found")
@@ -374,9 +415,9 @@ for program_info in programs_info:
             # Print on single line
             print(f"[+] Fetched {len(programs_details)}/{len(programs_info)} programs details" , end='\r')
 
-# Save program_details to a file json called programs_details.json
-with open(f'/ptv/healer/bbplats/bc/programs_details_new.json', 'w') as f:
+# Save program_details to a file json called programs_details_new.json
+with open(parent_dir + '/programs_details_new.json', 'w') as f:
     json.dump(programs_details, f)
-print(f"[+] Done! {len(programs_details)}/{can_subscribes} programs details saved to programs_details.json")
+print(f"[+] Done! {len(programs_details)}/{can_subscribes} programs details saved to programs_details_new.json")
 
 print(f"[+] Fetching programs details took {time.time() - start_time} seconds")
