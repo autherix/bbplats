@@ -56,7 +56,7 @@ h1username = creds['h1username']
 h1token = creds['h1token']
 
 # Print all credentials to the console
-print(f"Username: {h1username} Token: {h1token}")
+# print(f"Username: {h1username} Token: CANNOT LOG CREDENTIALS :)")
 
 
 # Run a notifio_sender script to send a notification to the discord.debug channel, saying that the script has started

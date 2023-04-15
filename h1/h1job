@@ -31,7 +31,7 @@ do
     # echo len of srclist
     # echo "${#srclist[@]}" >> $binpath/logs/h1job.log
     # echo "$i" >> $binpath/logs/h1job.log
-    source "$i"
+    source "$i" > /dev/null 2>&1
     # echo "pass" >> $binpath/logs/h1job.log
 done
 

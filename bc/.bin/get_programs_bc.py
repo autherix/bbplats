@@ -36,6 +36,8 @@ def LoadVenv():
         res = os.execv(os_join_path, [os_join_path] + sys.argv)
 LoadVenv()
 
+import os, sys, requests, json, yaml
+
 # get current running script path
 script_path = os.path.dirname(os.path.realpath(__file__))
 # get parent path
@@ -43,6 +45,9 @@ parent_dir = os.path.dirname(script_path)
 
 import os, requests, sys, time, json, yaml, argparse, jdatetime, datetime, html
 from bs4 import BeautifulSoup
+
+# Save start time of the program to var called start_time
+start_time = time.time()
 
 # If there is a cookies.txt file, read it and parse as json
 if os.path.isfile(parent_dir + "/cookies.txt"):
@@ -280,7 +285,7 @@ programs_info = []
 for program in programs:
     programs_info.append(program)
 
-while page < totalPages:
+while page <= totalPages:
     print(f"[+] Fetching page {page} of {totalPages}", end="\r")
     page += 1
     fetch_url = f"https://bugcrowd.com/programs.json?sort[]=promoted-desc&page[]={page}"
@@ -297,3 +302,5 @@ while page < totalPages:
 with open(parent_dir + '/programs_info.json', 'w') as f:
     json.dump(programs_info, f)
 print(f"[+] Done! {len(programs_info)} programs URLs saved to programs_info.json")
+print(f"[+] Fetching programs details took {time.time() - start_time} seconds")
+print("End program: " + str(os.path.basename(__file__)))

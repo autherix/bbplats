@@ -36,6 +36,8 @@ def LoadVenv():
         res = os.execv(os_join_path, [os_join_path] + sys.argv)
 LoadVenv()
 
+import os, sys, requests, json, yaml
+
 # get current running script path
 script_path = os.path.dirname(os.path.realpath(__file__))
 # get parent path
@@ -421,3 +423,4 @@ with open(parent_dir + '/programs_details_new.json', 'w') as f:
 print(f"[+] Done! {len(programs_details)}/{can_subscribes} programs details saved to programs_details_new.json")
 
 print(f"[+] Fetching programs details took {time.time() - start_time} seconds")
+print("End program: " + str(os.path.basename(__file__)))

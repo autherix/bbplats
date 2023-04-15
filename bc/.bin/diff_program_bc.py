@@ -36,6 +36,8 @@ def LoadVenv():
         res = os.execv(os_join_path, [os_join_path] + sys.argv)
 LoadVenv()
 
+import os, sys, requests, json, yaml
+
 # get current running script path
 script_path = os.path.dirname(os.path.realpath(__file__))
 # get parent path
@@ -95,7 +97,7 @@ for new_program in new_programs_info:
         if tgt_changes:
             tgt_changes_str = "\n----------\n".join(tgt_changes)
             print(f"Changes for program: {new_program['name']}\n{'-'*15}\n{tgt_changes_str}\n")
-            os.popen(f"notifio_sender --title 'Changes for: {new_name}' --discord.programs_base \"Changes for program: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{tgt_changes_str}\" # > /dev/null")
+            os.popen(f"notifio_sender --title 'Changes for: {new_name}' --discord.targets_base \"Changes for program: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{tgt_changes_str}\" # > /dev/null")
             print("_"*40)
 
         # Select target_groups_info->groups_all_data element from the new program dictionary
@@ -152,7 +154,8 @@ for new_program in new_programs_info:
                         tag_name = tag['name']
                         tag_names.append(tag_name)
                     # Merge and append the data to the group_targets_list
-                    group_targets_list.append(f"Scope ID: {target_id}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n")
+                    group_targets_list.append(f"Scope Name: {target_name}\nURI: {target_uri}\nCategory: {target_category}\nTags: {tag_names}")
+                    # group_targets_list.append(f"Scope ID: {target_id}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n")
                 group_targets_list_str = "\n----------\n".join(group_targets_list)
 
             # Find in the old program dictionary the group with the same id
@@ -220,14 +223,16 @@ for new_program in new_programs_info:
                                 # Except if the target is not in the old group dictionary
                                 except StopIteration:
                                     # So new target is added to the group
-                                    print(f"New scope: {target_name}\n{'-'*15}\nScope ID: {target_id}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n")
-                                    os.popen(f"notifio_sender --title 'New Scope Added:\n\t{target_name}' --discord.targets_scope \"New Scope On program: {new_name}\nProgram url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{'-'*10}\nScope Added to group: {group_name}\nGroup In-Scope: {group_in_scope}\nGroup Reward Range: {group_reward_range_str}\n{'-'*15}\nScope ID: {target_id}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n\" # > /dev/null")
+                                    print(f"New scope: {target_name}\n{'-'*15}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n")
+                                    notif = os.popen(f"notifio_sender --title 'New Scope Added:\n\t{target_name}' --discord.targets_scope \"New Scope On program: {new_name}\nProgram url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n{'-'*10}\nScope Added to group: {group_name}\nGroup In-Scope: {group_in_scope}\nGroup Reward Range: {group_reward_range_str}\n{'-'*15}\nScope Name: {target_name}\nScope URI: {target_uri}\nScope Category: {target_category}\nScope Tags: {tag_names}\n\"; wait $!; # > /dev/null")
+                                    # Print the notification command result
+                                    print(notif.read())
                                     print("_"*40)
 
             except StopIteration:
                 # If the group is not found, it means that it is a new group
-                print(f"New group: {group_name}\n{'-'*15}\nTarget url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n")
-                os.popen(f"notifio_sender --title 'New group: {group_name}' --discord.targets_scope \"New group: {group_name}\nOn Target: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\nGroup In Scope: {group_in_scope}\nGroup Reward Range:\n{group_reward_range_str}\n{'-'*15}\nGroup Scopes:\n{group_targets_list_str}\" # > /dev/null")
+                print(f"New Scope Group: {group_name}\n{'-'*15}\nTarget url: {new_url}\nProgram Type: #{program_type}\n{'-'*15}\n")
+                os.popen(f"notifio_sender --title 'New group: {group_name}' --discord.targets_scope \"Group: {group_name}\nOn Target: {new_name}\n{new_url}\nProgram Type: #{program_type}\nIn Scope: {group_in_scope}\nReward Range:\n{group_reward_range_str}\n{'-'*15}\n###Scopes:\n{group_targets_list_str}\" # > /dev/null")
                 print("_"*40)
                 continue
                 print("_"*40)
@@ -298,8 +303,12 @@ for new_program in new_programs_info:
             new_group_infos.append(f"[+] Group: {group_name_info}\n\tIn Scope: {group_in_scope_info}\n\tReward Ranges:\n\t\tP1: {p1_min}-{p1_max}\n\t\tP2: {p2_min}-{p2_max}\n\t\tP3: {p3_min}-{p3_max}\n\t\tP4: {p4_min}-{p4_max}\n\t\tP5: {p5_min}-{p5_max}\n\tScopes:\n{new_group_targets_str}\n{'-'*15}")
         # Join the new_group_infos list to a string
         new_group_infos_str = "\n".join(new_group_infos)
-        os.popen(f"notifio_sender --title 'New Target: {new_name}' --discord.targets_scope \"New Target: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\nResearcher Banned: {new_resercher_banned}\nCan Submit Report: {new_can_submit_report}\n{'-'*15}\nTarget Groups:\n{'-'*15}\n{new_group_infos_str}\n{'-'*15}\n\" # > /dev/null")
+        os.popen(f"notifio_sender --title 'New Target: {new_name}' --discord.targets_base \"New Target: {new_name}\nTarget url: {new_url}\nProgram Type: #{program_type}\nResearcher Banned: {new_resercher_banned}\nCan Submit Report: {new_can_submit_report}\n{'-'*15}\nTarget Groups:\n{'-'*15}\n{new_group_infos_str}\n{'-'*15}\n\" # > /dev/null")
 
-# Replace the content of the old_programs.json file with the new_programs.json file using replace_content function
-replace_content(f"{parent_dir}/old_programs.json", f"{parent_dir}/new_programs.json")
-print("Done!")
+# Replace the content of the programs_details_old.json file with the programs_details_new.json file using replace_content function
+os.popen(f"cp {parent_dir}/programs_details_new.json {parent_dir}/programs_details_old.json")
+
+# Print the time the script finished running
+print(f"Finished in {time.time() - start_time} seconds")
+
+print("End program: " + str(os.path.basename(__file__)))
