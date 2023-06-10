@@ -36,7 +36,7 @@ def LoadVenv():
         res = os.execv(os_join_path, [os_join_path] + sys.argv)
 LoadVenv()
 
-import os, sys, requests, json, yaml
+import os, sys, requests, json, yaml, subprocess, tempfile
 
 # get current running script path
 script_path = os.path.dirname(os.path.realpath(__file__))
@@ -412,6 +412,20 @@ for program_info in programs_info:
         # Append program_info to programs_details
         programs_details.append(program_info)
 
+        # Convert json object to string
+        program_info = json.dumps(program_info)
+
+        # create a temp file to store program_details
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as script_file:
+            script_file.write(program_info)
+            # Save the file name to a variable
+            script_file_name = script_file.name
+
+        # Add program_info to the database, use healerdb to do this
+        cmd_run=["healerdb", "bc_targetinfo", "create", "-db", "bbplats", "-coll", "bc", "-doc", script_file_name]
+        # Run subprocess to run the command, but prevent the output from being printed, run in background and don't wait for it to finish
+        subprocess.run(cmd_run, stdin=subprocess.DEVNULL, shell=False, check=False, stdout=subprocess.DEVNULL)
+
         # if len(programs_details) mode 10 equals 0, then 
         if len(programs_details) % 10 == 0:
             # Print on single line
@@ -420,7 +434,7 @@ for program_info in programs_info:
 # Save program_details to a file json called programs_details_new.json
 with open(parent_dir + '/programs_details_new.json', 'w') as f:
     json.dump(programs_details, f)
-print(f"[+] Done! {len(programs_details)}/{can_subscribes} programs details saved to programs_details_new.json")
+print(f"[+] Done! {len(programs_details)}/{can_subscribes} subscribable programs details saved to programs_details_new.json")
 
 print(f"[+] Fetching programs details took {time.time() - start_time} seconds")
 print("End program: " + str(os.path.basename(__file__)))

@@ -23,12 +23,32 @@ fi
 # Define the script to be run
 # script='python3 /ptv/healer/bbplats/h1/get_programs.py && python3 /ptv/healer/bbplats/h1/get_program.py && python3 /ptv/healer/bbplats/h1/diff_program.py'
 
+# Check all the required files exist, create a list of strings
+list_of_files=("$binpath/.bin/get_programs_h1.py" "$binpath/.bin/get_program_h1.py" "$binpath/.bin/diff_program_h1.py" "$binpath/.bin/mod_utils.py" "$binpath/h1job" "$binpath/requirements.txt" "$binpath/creds.yaml")
+# if any of these files do not exist, print error message saying the list of non-existing required files and exit 1
+# Create an empty list to store non-existing files
+non_existing_files=()
+for file in "${list_of_files[@]}"; do
+    if [ ! -f "$file" ]; then
+        non_existing_files+=("$file")
+    fi
+done
+# If the list of non-existing files is not empty, print error message and exit 1
+if [ ${#non_existing_files[@]} -ne 0 ]; then
+    echo "The following required files do not exist:"
+    for file in "${non_existing_files[@]}"; do
+        echo "$file"
+    done
+    echo "Please make sure all the required files exist."
+    exit 1
+fi
+
 # Clear crontab for the current user
 # crontab -r
 
 # Define the cron job to run the script every 20 minutes
 # cronjob="*/1 * * * * /ptv/healer/bbplats/h1/test.sh"
-cronjob="*/20 * * * * $binpath/h1job"
+cronjob="*/30 * * * * $binpath/h1job"
 # cronjob="*/20 * * * * /ptv/healer/bbplats/h1/h1job"
 
 # Add the cron job

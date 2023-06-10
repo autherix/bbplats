@@ -48,7 +48,7 @@ if [ -z "$a" ]; then
     exit 1
 fi
 # Send a started job notification to discord.debug channel
-notifio_sender --title 'HackerOne Job Started' --discord.debug "Started Job For H1 - Fetching all programs and reporting minor and major changes" >> $binpath/logs/h1job.log
+notifio --title 'HackerOne Job Started' --discord -ch debug -m "Started Job For H1 - Fetching all programs and reporting minor and major changes" >> $binpath/logs/h1job.log
 # Run the scripts
 $binpath/.bin/get_programs_h1.py >> $binpath/logs/h1job.log
 $binpath/.bin/get_program_h1.py >> $binpath/logs/h1job.log

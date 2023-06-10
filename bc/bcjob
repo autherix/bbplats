@@ -48,7 +48,7 @@ if [ -z "$a" ]; then
     exit 1
 fi
 # Send a started job notification to discord.debug channel
-notifio_sender --title 'BugCrowd Job Started' --discord.debug "Started Job For bc - Fetching all programs and reporting minor and major changes" >> $binpath/logs/bcjob.log
+notifio --title 'BugCrowd Job Started' --discord -ch debug -m "Started Job For bc - Fetching all programs and reporting minor and major changes" >> $binpath/logs/bcjob.log
 # Run the scripts
 $binpath/.bin/get_programs_bc.py >> $binpath/logs/bcjob.log
 $binpath/.bin/get_program_bc.py >> $binpath/logs/bcjob.log

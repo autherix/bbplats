@@ -61,9 +61,9 @@ try:
         h1_tgts_old_full = json.load(f_old)
 except FileNotFoundError:
     # Copy the file h1_tgts_new_full.json to h1_tgts_old_full.json and print a message and exit, use os.popen to copy the file, if successful print a message and exit
-    if os.popen(f"cp {parent_dir}/h1_tgts_new_full.json {parent_dir}/h1_tgts_old_full.json").read():
+    os.popen(f"cp {parent_dir}/h1_tgts_new_full.json {parent_dir}/h1_tgts_old_full.json").read()
     # if os.popen('cp /ptv/healer/bbplats/h1/h1_tgts_new_full.json /ptv/healer/bbplats/h1/h1_tgts_old_full.json').read():
-        print('No h1_tgts_old_full.json file found, copied h1_tgts_new_full.json to h1_tgts_old_full.json, Please run this program again')
+    print('No h1_tgts_old_full.json file found, copied h1_tgts_new_full.json to h1_tgts_old_full.json, Please run this program again')
     sys.exit(1)
 # Iterate through the h1_tgts_new_full list 
 for newlist_target in h1_tgts_new_full:
@@ -93,8 +93,20 @@ for newlist_target in h1_tgts_new_full:
                     tgt_changes.append(f"Changed: {key}\n\tfrom: {oldlist_target['attributes'][key]} \tto {newlist_target['attributes'][key]}\n")
         if tgt_changes:
             tgt_changes_str = '\n'.join(tgt_changes)
-            print(f"changes for {target_name}:\n{'-'*15}\n{tgt_changes_str}")
-            os.popen(f"notifio_sender --title 'HackerOne Target Change' --discord.targets_base --discord.message \"Target_name: {target_name}\nTarget_url: {target_url}\nTarget_type: #{target_type}\nChanges are:\n{tgt_changes_str}\"# > /dev/null ")
+
+            # escape the single quotes in the string
+            tgt_changes_str = tgt_changes_str.replace("'", "\\'")
+
+            msg_title = f"HackerOne Program Changed: {target_name}"
+            msg_body = f"Target_name: {target_name}\nTarget_url: <{target_url}>\nTarget_type: #{target_type}\nChanges are:\n{tgt_changes_str}"
+
+            # escape the single quotes in the string
+            msg_title = msg_title.replace("'", "\\'")
+            msg_body = msg_body.replace("'", "\\'")
+
+            print(msg_title, msg_body)
+
+            os.popen(f"notifio --title '{msg_title}' --discord -ch targets_base -m '{msg_body}' # > /dev/null ")
             # seperator
             print("-" * 40)
         
@@ -118,25 +130,57 @@ for newlist_target in h1_tgts_new_full:
                         scope_changes.append(f"Added Scope: {key}\nto: {scope['attributes'][key]}\nScope ID: {newlist_scope_id}\nScope Eligible for submission: {scope['attributes']['eligible_for_submission']}\nEligible for bounty: {scope['attributes']['eligible_for_bounty']}\n")
                 if scope_changes:
                     scope_changes_str = '\n'.join(scope_changes)
-                    print(f"changes for target: {newlist_target['attributes']['name']}:\nURL:{target_url}\n{'-'*15}\n{scope_changes_str}")
-                    os.popen(f"notifio_sender --title 'H1 Scope Changes' --discord.targets_scope \"Changes for {target_name}:\nTarget Type: #{target_type}\nTarget URL: {target_url}\n{'-'*15}\n{scope_changes_str}\"# > /dev/null ")
+
+                    # escape the single quotes in the string
+                    scope_changes_str = scope_changes_str.replace("'", "\\'")
+
+                    msg_title = f"HackerOne Scope Changed: {target_name}"
+                    msg_body = f"Target_name: {target_name}\nTarget_url: <{target_url}>\nTarget_type: #{target_type}\nChanges are:\n{scope_changes_str}"
+
+                    # escape the single quotes in the string
+                    msg_title = msg_title.replace("'", "\\'")
+                    msg_body = msg_body.replace("'", "\\'")
+
+                    print(msg_title, msg_body)
+
+                    os.popen(f"notifio --title 'H1 Scope Changes' --discord -ch targets_scope -m 'Changes for {target_name}:\nTarget Type: #{target_type}\nTarget URL: <{target_url}>\n{'-'*15}\n{scope_changes_str}' # > /dev/null ")
                     # seperator
                     print("-" * 40)
             except StopIteration:
-                # If the dictionary is not found, print the following message
-                print(f"New Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nScope ID: {newlist_scope_id}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
-                os.popen(f"notifio_sender --title 'New scope on {target_name}\nTarget URL:{target_url}\nTarget Type: #{target_type}' --discord.targets_scope \"New scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nScope ID: {newlist_scope_id}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\"# > /dev/null ")
+
+                msg_title = f"New scope on {target_name}\nTarget URL:<{target_url}>\nTarget Type: #{target_type}"
+                msg_body = f"New Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}"
+
+                # escape the single quotes in the string
+                msg_title = msg_title.replace("'", "\\'")
+                msg_body = msg_body.replace("'", "\\'")
+
+                print(msg_title, msg_body)
+
+                os.popen(f"notifio --title '{msg_title}' --discord -ch targets_scope -m '{msg_body}' # > /dev/null ")
                 # seperator
                 print("-" * 40)
     except StopIteration:
         # If the id is not found in the oldlist, then the target is new
-        print(f"New target: {newlist_target['attributes']['name']}\nHandle: {newlist_target['attributes']['handle']}\n")
         new_tgt_scope = []
         for scope in newlist_target['relationships']['structured_scopes']['data']:
             new_tgt_scope.append(f"Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
         # Join the list of scopes into a string
         new_tgt_scope_str = '\n----------\n'.join(new_tgt_scope)
-        os.popen(f"notifio_sender --title 'New target: {target_name}' --discord.targets_base \"New target: {target_name}\nTarget URL: {target_url}\nTarget Type: #{target_type}\n{'-'*15}\n{new_tgt_scope_str}\"# > /dev/null ")
+
+        # escape the single quotes in the string
+        new_tgt_scope_str = new_tgt_scope_str.replace("'", "\\'")
+
+        msg_title = f"New Program: {target_name}"
+        msg_body = f"New program: {target_name}\nProgram URL: <{target_url}>\nProgram Type: #{target_type}\n{'-'*15}\n{new_tgt_scope_str}"
+
+        # escape the single quotes in the string
+        msg_title = msg_title.replace("'", "\\'")
+        msg_body = msg_body.replace("'", "\\'")
+
+        print(msg_title, msg_body)
+
+        os.popen(f"notifio --title '{msg_title}' --discord -ch targets_base -m '{msg_body}' # > /dev/null ")
         print('-' * 40)
         continue
 # Now reverse the process and check if any targets are missing from the new list
@@ -173,18 +217,37 @@ for oldlist_target in h1_tgts_old_full:
                         scope_changes.append(f"Removed Attribute: {key}\nFrom Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
                 if scope_changes:
                     scope_changes_str = '\n'.join(scope_changes)
-                    print(f"changes for target: {target_name_old}:\nURL:{target_url_old}\n{'-'*15}\n{scope_changes_str}")
-                    os.popen(f"notifio_sender --title 'H1 Scope Changes' --discord.targets_scope \"Changes for {target_name_old}:\nTarget Type: #{target_type_old}\nTarget URL: {target_url_old}\n{'-'*15}\n{scope_changes_str}\"# > /dev/null ")
+                    # escape the single quotes in the string
+                    scope_changes_str = scope_changes_str.replace("'", "\\'")
+
+                    msg_title = f"H1 - Scope Changed: {target_name_old}"
+                    msg_body = f"Changes for {target_name_old}:\nTarget Type: #{target_type_old}\nTarget URL: {target_url_old}\n{'-'*15}\n{scope_changes_str}"
+
+                    # escape the single quotes in the string
+                    msg_title = msg_title.replace("'", "\\'")
+                    msg_body = msg_body.replace("'", "\\'")
+
+                    print(msg_title, msg_body)
+
+                    os.popen(f"notifio --title '{msg_title}' --discord -ch targets_scope -m '{msg_body}' # > /dev/null ")
                     # seperator
                     print("-" * 40)
             except StopIteration:
-                print(f"Scope {scope_string_old} removed from {oldlist_target['attributes']['name']}")
-                os.popen(f"notifio_sender --title 'Scope removed fron {target_name_old}' --discord.targets_scope \"Scope: {scope_string_old}\nScope Type: {scope_type_old} removed from {target_name_old}\nTarget URL: {target_url_old}\nTarget Type: #{target_type_old}\"# > /dev/null ")
+                msg_title = f"H1 - Scope removed from {target_name_old}"
+                msg_body = f"Scope: {scope_string_old}\nScope Type: {scope_type_old} removed from {target_name_old}\nTarget URL: {target_url_old}\nTarget Type: #{target_type_old}"
+
+                # escape the single quotes in the string
+                msg_title = msg_title.replace("'", "\\'")
+                msg_body = msg_body.replace("'", "\\'")
+
+                print(msg_title, msg_body)
+
+                os.popen(f"notifio --title '{msg_title}' --discord -ch targets_scope -m '{msg_body}' # > /dev/null ")
                 print('-' * 40)
     except StopIteration:
-        print(f"Target missing: {oldlist_target['attributes']['name']}\nHandle: {oldlist_target['attributes']['handle']}\n")
-        # Save the format
-        os.popen(f"notifio_sender --title 'Target missing: {target_name_old}' --discord.targets_base \"Target missing: {target_name_old}\nTarget Type was: #{target_type_old}\nTarget URL: {target_url_old}\"# > /dev/null ")
+        msg_title = f"H1 - Target missing: {target_name_old}"
+        msg_body = f"Target missing: {target_name_old}\nTarget Type: #{target_type_old}\nTarget URL: {target_url_old}"
+        os.popen(f"notifio --title '{msg_title}' --discord -ch targets_base -m '{msg_body}' # > /dev/null ")
         print('-' * 40)
         continue
 # After all done with no error, save the new list to the old list

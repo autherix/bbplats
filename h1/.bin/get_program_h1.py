@@ -36,7 +36,7 @@ def LoadVenv():
         res = os.execv(os_join_path, [os_join_path] + sys.argv)
 LoadVenv()
 
-import os, sys, time, json, requests, argparse, yaml, asyncio, time, jdatetime, datetime, pytz
+import os, sys, time, json, requests, argparse, yaml, asyncio, time, jdatetime, datetime, pytz, subprocess
 
 # get current running script path
 script_path = os.path.dirname(os.path.realpath(__file__))
@@ -64,7 +64,7 @@ def get_program(h1username, h1token, handle):
     return r
 
 # read file h1_tgts_new.json and parse as json
-with open(parent_dir + '/h1_tgts_new.json', 'r') as f:
+with open(parent_dir + '/h1_tgts.json', 'r') as f:
     h1_tgts = json.load(f)
 
 
@@ -87,10 +87,18 @@ for i in h1_tgts_new_handles:
     # Print the progress (e.g. Fetching Programs Full data : 14/615), edit the line not printing a new line if i's index mod 10 is 0
     if h1_tgts_new_handles.index(i) % 10 == 0 or h1_tgts_new_handles.index(i) == len(h1_tgts_new_handles):
         print(f"Fetching Programs Full data : {h1_tgts_new_handles.index(i)}/{len(h1_tgts_new_handles)}", end="\r")
-    getting_pro = get_program(h1username, h1token, i)
+    getting_pro = get_program(h1username, h1token, i).json()
     # Append the json response to the list h1_tgts_new_full
-    h1_tgts_new_full.append(getting_pro.json())
+    h1_tgts_new_full.append(getting_pro)
 
+    # Convert json object to string
+    getting_pro = json.dumps(getting_pro)
+
+    # Add getting_pro.json() to the database, use healerdb to do this
+    cmd_run=["healerdb", "h1_targetinfo", "create", "-db", "bbplats", "-coll", "h1", "-doc", getting_pro]
+    
+    # Run subprocess to run the command, but prevent the output from being printed, run in background and don't wait for it to finish
+    subprocess.run(cmd_run, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, shell=False, check=False)
 
 # Write the list h1_tgts_new_full to the file h1_tgts_new_full.json
 with open(parent_dir + '/h1_tgts_new_full.json', 'w') as f:

@@ -50,18 +50,16 @@ with open(parent_dir + "/creds.yaml", 'r') as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-creds = creds['healer']['bbplats']['h1']
-# Select the element h1username and h1token from the yaml file
-h1username = creds['h1username']
-h1token = creds['h1token']
-
-# Print all credentials to the console
-# print(f"Username: {h1username} Token: CANNOT LOG CREDENTIALS :)")
-
-
-# Run a notifio_sender script to send a notification to the discord.debug channel, saying that the script has started
-# os.popen("notifio_sender --title 'Job started' --discord.debug \"Started the get_programs.py script\" > /dev/null 2>&1")
-# os.popen("notifio_sender --discord.debug 'HackerOne: Started getting programs' > /dev/null 2>&1")
+# Load the credentials from the yaml file content
+try:
+    creds = creds['healer']['bbplats']['h1']
+    # Select the element h1username and h1token from the yaml file
+    h1username = creds['h1username']
+    h1token = creds['h1token']
+except KeyError as exc:
+    print(exc)
+    print("[-] Error: The file creds.yaml is not properly configured, empty or not accessible.")
+    sys.exit(1)
 
 def get_h1_tgts(h1username,h1token,page_num, page_size=100):
     # Send a request to the API server: https://api.hackerone.com/v1/ with GET method and Header -H Accept: application/json
