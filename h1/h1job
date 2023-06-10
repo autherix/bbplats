@@ -18,21 +18,12 @@ while IFS= read -r line; do
     # If line starts with 'source', then add it to srclist
     if [[ $line == source* ]]; then
         # select everything after 'source '
-        # echo "${line:7}" >> $binpath/logs/h1job.log
         srclist+=("${line:7}")
     fi
 done < ~/.bashrc
-
-# echo all members of srclist at once
-# echo "${srclist[@]}" >> $binpath/logs/h1job.log
-
 for i in "${srclist[@]}"
 do
-    # echo len of srclist
-    # echo "${#srclist[@]}" >> $binpath/logs/h1job.log
-    # echo "$i" >> $binpath/logs/h1job.log
     source "$i" > /dev/null 2>&1
-    # echo "pass" >> $binpath/logs/h1job.log
 done
 
 # echo date,time,venv and current working directory
@@ -40,11 +31,11 @@ echo "[+] Current date and time: $(TZ=":Asia/Tehran" date)" >> $binpath/logs/h1j
 echo "[+] Current PATH: $PATH" >> $binpath/logs/h1job.log
 echo "[+] Current virtual environment: $(which python3)" >> $binpath/logs/h1job.log
 echo "[+] Current working directory: $(pwd)" >> $binpath/logs/h1job.log
-# Check whether notifioo_sender is available
-a=$(which notifio_sender)
-# If a is empty, then notifio_sender is not available
+# Check whether notifio is available
+a=$(which notifio)
+# If a is empty, then notifio is not available
 if [ -z "$a" ]; then
-    echo "notifio_sender is not available. Please install it first." >> $binpath/logs/h1job.log
+    echo "notifio is not available. Please install it first." >> $binpath/logs/h1job.log
     exit 1
 fi
 # Send a started job notification to discord.debug channel

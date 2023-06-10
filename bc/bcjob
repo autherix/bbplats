@@ -18,21 +18,12 @@ while IFS= read -r line; do
     # If line starts with 'source', then add it to srclist
     if [[ $line == source* ]]; then
         # select everything after 'source '
-        # echo "${line:7}" >> $binpath/logs/bcjob.log
         srclist+=("${line:7}")
     fi
 done < ~/.bashrc
-
-# echo all members of srclist at once
-# echo "${srclist[@]}" >> $binpath/logs/bcjob.log
-
 for i in "${srclist[@]}"
 do
-    # echo len of srclist
-    # echo "${#srclist[@]}" >> $binpath/logs/bcjob.log
-    # echo "$i" >> $binpath/logs/bcjob.log
     source "$i" > /dev/null 2>&1
-    # echo "pass" >> $binpath/logs/bcjob.log
 done
 
 # echo date,time,venv and current working directory
@@ -40,11 +31,11 @@ echo "[+] Current date and time: $(TZ=":Asia/Tehran" date)" >> $binpath/logs/bcj
 echo "[+] Current PATH: $PATH" >> $binpath/logs/bcjob.log
 echo "[+] Current virtual environment: $(which python3)" >> $binpath/logs/bcjob.log
 echo "[+] Current working directory: $(pwd)" >> $binpath/logs/bcjob.log
-# Check whether notifioo_sender is available
-a=$(which notifio_sender)
-# If a is empty, then notifio_sender is not available
+# Check whether notifio is available
+a=$(which notifio)
+# If a is empty, then notifio is not available
 if [ -z "$a" ]; then
-    echo "notifio_sender is not available. Please install it first." >> $binpath/logs/bcjob.log
+    echo "notifio is not available. Please install it first." >> $binpath/logs/bcjob.log
     exit 1
 fi
 # Send a started job notification to discord.debug channel
