@@ -71,7 +71,7 @@ for newlist_target in h1_tgts_new_full:
     newlist_target_id = newlist_target['id']
     target_name = newlist_target['attributes']['name']
     target_handle = newlist_target['attributes']['handle']
-    target_url = f"https://hackerone.com/{target_handle}"
+    target_url = f"<https://hackerone.com/{target_handle}>"
     target_state = newlist_target['attributes']['state']
     # If target_state equals 'public_mode' then set target_type to 'Public' else if it equals 'soft_launched' then set target_type to 'Private'
     if target_state == 'public_mode':
@@ -98,7 +98,7 @@ for newlist_target in h1_tgts_new_full:
             tgt_changes_str = tgt_changes_str.replace("'", "\\'")
 
             msg_title = f"HackerOne Program Changed: {target_name}"
-            msg_body = f"Target_name: {target_name}\nTarget_url: <{target_url}>\nTarget_type: #{target_type}\nChanges are:\n{tgt_changes_str}"
+            msg_body = f"Target_name: {target_name}\nTarget_url: {target_url}\nTarget_type: #{target_type}\nChanges are:\n{tgt_changes_str}"
 
             # escape the single quotes in the string
             msg_title = msg_title.replace("'", "\\'")
@@ -125,7 +125,11 @@ for newlist_target in h1_tgts_new_full:
                         # ignore the key 'instruction' becuase it's too long
                         # ignore the key updated_at because it's not needed
                         if scope['attributes'][key] != oldlist_scope['attributes'][key] and key != 'instruction' and key != 'updated_at':
-                            scope_changes.append(f"Changed Scope: {scope['attributes']['asset_identifier']}\nChanged: {key}\n\tfrom: {oldlist_scope['attributes'][key]} \tto {scope['attributes'][key]}\nEligible for submission: {scope['attributes']['eligible_for_submission']}\nEligible for bounty: {scope['attributes']['eligible_for_bounty']}\n")
+                            scope_asset=scope['attributes']['asset_identifier']
+                            # if scope_asset starts with 'http', then add < and > to the string
+                            if scope_asset.startswith('http'):
+                                scope_asset = f"<{scope_asset}>"
+                            scope_changes.append(f"Changed Scope: {scope_asset}\nChanged: {key}\n\tfrom: {oldlist_scope['attributes'][key]} \tto {scope['attributes'][key]}\nEligible for submission: {scope['attributes']['eligible_for_submission']}\nEligible for bounty: {scope['attributes']['eligible_for_bounty']}\n")
                     except KeyError:
                         scope_changes.append(f"Added Scope: {key}\nto: {scope['attributes'][key]}\nScope ID: {newlist_scope_id}\nScope Eligible for submission: {scope['attributes']['eligible_for_submission']}\nEligible for bounty: {scope['attributes']['eligible_for_bounty']}\n")
                 if scope_changes:
@@ -135,7 +139,7 @@ for newlist_target in h1_tgts_new_full:
                     scope_changes_str = scope_changes_str.replace("'", "\\'")
 
                     msg_title = f"HackerOne Scope Changed: {target_name}"
-                    msg_body = f"Target_name: {target_name}\nTarget_url: <{target_url}>\nTarget_type: #{target_type}\nChanges are:\n{scope_changes_str}"
+                    msg_body = f"Target_name: {target_name}\nTarget_url: {target_url}\nTarget_type: #{target_type}\nChanges are:\n{scope_changes_str}"
 
                     # escape the single quotes in the string
                     msg_title = msg_title.replace("'", "\\'")
@@ -143,13 +147,17 @@ for newlist_target in h1_tgts_new_full:
 
                     print(msg_title, msg_body)
 
-                    os.popen(f"notifio --title 'H1 Scope Changes' --discord -ch targets_scope -m 'Changes for {target_name}:\nTarget Type: #{target_type}\nTarget URL: <{target_url}>\n{'-'*15}\n{scope_changes_str}' # > /dev/null ")
+                    os.popen(f"notifio --title 'H1 Scope Changes' --discord -ch targets_scope -m 'Changes for {target_name}:\nTarget Type: #{target_type}\nTarget URL: {target_url}\n{'-'*15}\n{scope_changes_str}' # > /dev/null ")
                     # seperator
                     print("-" * 40)
             except StopIteration:
 
-                msg_title = f"New scope on {target_name}\nTarget URL:<{target_url}>\nTarget Type: #{target_type}"
-                msg_body = f"New Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}"
+                msg_title = f"New scope on {target_name}\nTarget URL:{target_url}\nTarget Type: #{target_type}"
+                scope_asset=scope['attributes']['asset_identifier']
+                # if scope_asset starts with 'http', then add < and > to the string
+                if scope_asset.startswith('http'):
+                    scope_asset = f"<{scope_asset}>"
+                msg_body = f"New Scope: {scope_asset}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}"
 
                 # escape the single quotes in the string
                 msg_title = msg_title.replace("'", "\\'")
@@ -164,7 +172,11 @@ for newlist_target in h1_tgts_new_full:
         # If the id is not found in the oldlist, then the target is new
         new_tgt_scope = []
         for scope in newlist_target['relationships']['structured_scopes']['data']:
-            new_tgt_scope.append(f"Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
+            scope_asset=scope['attributes']['asset_identifier']
+            # if scope_asset starts with 'http', then add < and > to the string
+            if scope_asset.startswith('http'):
+                scope_asset = f"<{scope_asset}>"
+            new_tgt_scope.append(f"Scope: {scope_asset}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
         # Join the list of scopes into a string
         new_tgt_scope_str = '\n----------\n'.join(new_tgt_scope)
 
@@ -172,7 +184,7 @@ for newlist_target in h1_tgts_new_full:
         new_tgt_scope_str = new_tgt_scope_str.replace("'", "\\'")
 
         msg_title = f"New Program: {target_name}"
-        msg_body = f"New program: {target_name}\nProgram URL: <{target_url}>\nProgram Type: #{target_type}\n{'-'*15}\n{new_tgt_scope_str}"
+        msg_body = f"New program: {target_name}\nProgram URL: {target_url}\nProgram Type: #{target_type}\n{'-'*15}\n{new_tgt_scope_str}"
 
         # escape the single quotes in the string
         msg_title = msg_title.replace("'", "\\'")
@@ -188,7 +200,7 @@ for oldlist_target in h1_tgts_old_full:
     oldlist_target_id = oldlist_target['id']
     target_name_old = oldlist_target['attributes']['name']
     target_hanlde_old = oldlist_target['attributes']['handle']
-    target_url_old = f"https://hackerone.com/{target_hanlde_old}"
+    target_url_old = f"<https://hackerone.com/{target_hanlde_old}>"
     target_state_old = oldlist_target['attributes']['state']
     # If target_state_old equals 'public_mode' then set target_type to 'Public' else if target_state_old equals 'soft_launched' then set target_type to 'Private'
     if target_state_old == 'public_mode':
@@ -214,7 +226,11 @@ for oldlist_target in h1_tgts_old_full:
                         pass
                     except KeyError:
                         # If the key is not found in the newlist, then the scope attribute is missing
-                        scope_changes.append(f"Removed Attribute: {key}\nFrom Scope: {scope['attributes']['asset_identifier']}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
+                        scope_asset=scope['attributes']['asset_identifier']
+                        # if scope_asset starts with 'http', then add < and > to the string
+                        if scope_asset.startswith('http'):
+                            scope_asset = f"<{scope_asset}>"
+                        scope_changes.append(f"Removed Attribute: {key}\nFrom Scope: {scope_asset}\nAsset Type: {scope['attributes']['asset_type']}\nEligible For Submission: {scope['attributes']['eligible_for_submission']}\nEligible For Bounty: {scope['attributes']['eligible_for_bounty']}\n")
                 if scope_changes:
                     scope_changes_str = '\n'.join(scope_changes)
                     # escape the single quotes in the string

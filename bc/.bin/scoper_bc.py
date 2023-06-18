@@ -69,7 +69,13 @@ else:
 
 
 # Find the target using healerdb
-targetinfo = os.popen(f"healerdb bc_targetinfo get -db bbplats -coll bc --handle {target_handle}").read()
+targetinfo = os.popen(f"healerdb bc_targetinfo get -db bbplats -coll bc --handle {target_handle}").read().strip()
+
+# if result is empty, exit
+if targetinfo == "":
+    # print in red
+    print("\033[91m" + "[-] [scoper_bc.py:] Target not found" + "\033[0m")
+    sys.exit(1)
 
 # convert to json
 targetinfo = json.dumps(json.loads(targetinfo), indent=4)
