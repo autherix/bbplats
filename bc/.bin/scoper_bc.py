@@ -7,29 +7,29 @@ def LoadVenv():
 
     # Check if the virtual environment exists
     if not os.path.exists(venv_dir):
-        pass
-        # print("Virtual environment not found. Trying to create one...")
+        print("Virtual environment not found. Trying to create one...")
         # Run a command to create the virtual environment in the parent path
+        res = os.system(f'python3 -m pip install -U pip > /dev/null 2>&1')
         res = os.system(f'python3 -m venv {venv_dir}')
         if res != 0:
-            # print('Failed to create virtual environment.')
+            print('Failed to create virtual environment.')
             exit(1)
         else:
-            pass
-            # print('Virtual environment created.')
+            print('Virtual environment created.')
             # If there is a requirements.txt in the parent path, install the dependencies
     requirements_txt = os.path.join(venv_parent_dir, 'requirements.txt')
     if os.path.exists(requirements_txt):
         source_cmd = f'source {os.path.join(venv_dir, "bin", "activate")} > /dev/null 2>&1'
-        pyinstall_cmd = f'python3 -m pip install -r {requirements_txt} > /dev/null 2>&1'
-        res = os.system(f'bash -c "{source_cmd} && {pyinstall_cmd} && deactivate > /dev/null 2>&1"')
+        # Run python3 -m pip freeze, if the result is not equal to requirements.txt, install the dependencies
+        res = os.system(f'bash -c "{source_cmd} && python3 -m pip freeze | grep -Fxq -f {requirements_txt} || python3 -m pip install -r {requirements_txt} > /dev/null 2>&1 && deactivate > /dev/null 2>&1"')
+        # pyinstall_cmd = f'python3 -m pip install -r {requirements_txt} > /dev/null 2>&1'
+        # res = os.system(f'bash -c "{source_cmd} && {pyinstall_cmd} && deactivate > /dev/null 2>&1"')
         # res = os.system(f'{os.path.join(venv_dir, "bin", "python3")} 
         if res != 0:
-            # print('Failed to install dependencies. requirements.txt may be corrupted or not accessible.')
+            print('Failed to install dependencies. requirements.txt may be corrupted or not accessible.')
             exit(1)
     else:
-        pass
-        # print('requirements.txt not found or not accessible. Going forward...')
+        print('requirements.txt not found or not accessible. Going forward...')
         # exit(1)
     
     # Try to activate the virtual environment
@@ -38,6 +38,12 @@ def LoadVenv():
     if not sys.executable.startswith(os_join_path):
         res = os.execv(os_join_path, [os_join_path] + sys.argv)
 LoadVenv()
+
+import os
+# get current running script path
+script_path = os.path.dirname(os.path.realpath(__file__))
+# get parent path
+parent_dir = os.path.dirname(script_path)
 
 import os, sys, time, json, requests, yaml, asyncio, subprocess, bson
 
